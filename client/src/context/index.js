@@ -1,3 +1,1 @@
-// Placeholder for context
-export default {};
-
+export { AuthProvider, useAuth, default as AuthContext } from './AuthContext.jsx';
