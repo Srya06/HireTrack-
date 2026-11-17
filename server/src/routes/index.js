@@ -6,6 +6,7 @@ import studentRoutes from './student.routes.js';
 import recruiterRoutes from './recruiter.routes.js';
 import jobRoutes from './job.routes.js';
 import applicationRoutes from './application.routes.js';
+import interviewRoutes from './interview.routes.js';
 
 const apiRouter = Router();
 
@@ -16,5 +17,6 @@ apiRouter.use('/students', studentRoutes);
 apiRouter.use('/recruiters', recruiterRoutes);
 apiRouter.use('/jobs', jobRoutes);
 apiRouter.use('/applications', applicationRoutes);
+apiRouter.use('/interviews', interviewRoutes);
 
 export default apiRouter;

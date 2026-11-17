@@ -2,10 +2,34 @@ import mongoose from 'mongoose';
 import { env } from './env.js';
 
 let isConnected = false;
+let mongodInstance = null;
 
 export const connectDB = async (uri = env.MONGODB_URI) => {
   if (isConnected || mongoose.connection.readyState === 1) {
     return mongoose.connection;
+  }
+
+  // In test environment, attempt connection; if external cluster fails or has IP restrictions, fallback to MongoMemoryServer
+  if (env.isTest) {
+    try {
+      const conn = await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 2000,
+        autoIndex: true
+      });
+      isConnected = true;
+      return conn.connection;
+    } catch {
+      if (!mongodInstance) {
+        const { MongoMemoryServer } = await import('mongodb-memory-server');
+        mongodInstance = await MongoMemoryServer.create();
+      }
+      const memUri = mongodInstance.getUri();
+      const conn = await mongoose.connect(memUri, {
+        autoIndex: true
+      });
+      isConnected = true;
+      return conn.connection;
+    }
   }
 
   try {
@@ -45,6 +69,10 @@ export const disconnectDB = async () => {
   if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
     isConnected = false;
+  }
+  if (mongodInstance) {
+    await mongodInstance.stop();
+    mongodInstance = null;
   }
 };
 

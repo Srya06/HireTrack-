@@ -1,4 +1,5 @@
 import request from 'supertest';
+import bcrypt from 'bcryptjs';
 import app from '../src/app.js';
 import { connectDB, disconnectDB } from '../src/config/db.js';
 import { User, StudentProfile, RecruiterProfile } from '../src/models/index.js';
@@ -17,6 +18,17 @@ describe('Auth & RBAC Test Suite', () => {
 
   beforeAll(async () => {
     await connectDB();
+    const existingAdmin = await User.findOne({ email: 'admin@hiretrack.edu' });
+    if (!existingAdmin) {
+      const passwordHash = await bcrypt.hash('Admin@HireTrack2026!', 10);
+      await User.create({
+        name: 'HireTrack Administrator',
+        email: 'admin@hiretrack.edu',
+        passwordHash,
+        role: ROLES.ADMIN,
+        accountStatus: USER_STATUSES.ACTIVE
+      });
+    }
   });
 
   afterAll(async () => {

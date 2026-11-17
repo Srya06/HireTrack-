@@ -60,3 +60,4 @@ export const validateStatusTransition = (currentStatus, targetStatus) => {
 export const isTerminalStatus = (status) => {
   return TERMINAL_APPLICATION_STATUSES.includes(status);
 };
+

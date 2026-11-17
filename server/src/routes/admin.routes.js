@@ -16,6 +16,9 @@ router.get('/ping', protect, authorizeRoles(ROLES.ADMIN), (req, res) => {
   });
 });
 
+// Admin Overview & Metrics (persisted DB counts/aggregations)
+router.get('/overview', protect, authorizeRoles(ROLES.ADMIN), adminController.getOverview);
+
 // Recruiter approval endpoints
 router.get(
   '/recruiters/pending',
@@ -30,6 +33,28 @@ router.patch(
   authorizeRoles(ROLES.ADMIN),
   validate(validateObjectId('recruiterId')),
   adminController.updateRecruiterApproval
+);
+
+// User administration
+router.get('/users', protect, authorizeRoles(ROLES.ADMIN), adminController.getUsers);
+
+router.patch(
+  '/users/:id/status',
+  protect,
+  authorizeRoles(ROLES.ADMIN),
+  validate(validateObjectId('id')),
+  adminController.updateUserStatus
+);
+
+// Job administration
+router.get('/jobs', protect, authorizeRoles(ROLES.ADMIN), adminController.getAllJobs);
+
+router.patch(
+  '/jobs/:id/status',
+  protect,
+  authorizeRoles(ROLES.ADMIN),
+  validate(validateObjectId('id')),
+  adminController.updateJobStatus
 );
 
 export default router;

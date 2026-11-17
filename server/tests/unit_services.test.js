@@ -179,3 +179,4 @@ describe('Unit Tests: Status Transition Service (DATABASE_SCHEMA.md)', () => {
     expect(validateStatusTransition(APPLIED, APPLIED).isValid).toBe(false);
   });
 });
+

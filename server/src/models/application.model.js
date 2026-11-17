@@ -89,3 +89,4 @@ applicationSchema.index({ studentId: 1, appliedAt: -1 });
 applicationSchema.index({ jobId: 1, status: 1, appliedAt: -1 });
 
 export const Application = mongoose.model('Application', applicationSchema);
+

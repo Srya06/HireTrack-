@@ -22,3 +22,4 @@ export const updateApplicationStatusValidator = [
     .isLength({ max: 1000 })
     .withMessage('Status note cannot exceed 1000 characters')
 ];
+

@@ -281,3 +281,4 @@ export const withdrawApplication = async (applicationId, studentUser) => {
   await application.save();
   return application.toJSON();
 };
+

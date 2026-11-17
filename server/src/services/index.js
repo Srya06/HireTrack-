@@ -4,5 +4,6 @@ export * as adminService from './admin.service.js';
 export * as recruiterService from './recruiter.service.js';
 export * as jobService from './job.service.js';
 export * as applicationService from './application.service.js';
+export * as interviewService from './interview.service.js';
 export * from './eligibility.service.js';
 export * from './statusTransition.service.js';

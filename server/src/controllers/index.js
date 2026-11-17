@@ -4,3 +4,4 @@ export * as adminController from './admin.controller.js';
 export * as recruiterController from './recruiter.controller.js';
 export * as jobController from './job.controller.js';
 export * as applicationController from './application.controller.js';
+export * as interviewController from './interview.controller.js';

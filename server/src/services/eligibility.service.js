@@ -96,3 +96,4 @@ export const checkEligibility = (studentProfile, jobCriteria = {}) => {
     }
   };
 };
+
