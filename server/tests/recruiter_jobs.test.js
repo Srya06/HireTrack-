@@ -287,3 +287,4 @@ describe('Recruiter Approval & Jobs Suite (CHUNK 3)', () => {
     expect(JSON.stringify(res.body.errors)).toMatch(/approval status/i);
   });
 });
+

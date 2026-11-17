@@ -67,3 +67,4 @@ export const updateRecruiterApproval = async (recruiterProfileId, { approvalStat
     user: user.toJSON()
   };
 };
+

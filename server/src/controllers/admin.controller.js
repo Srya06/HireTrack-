@@ -23,3 +23,4 @@ export const updateRecruiterApproval = asyncHandler(async (req, res) => {
     data: result
   });
 });
+

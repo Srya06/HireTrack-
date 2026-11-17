@@ -1,6 +1,13 @@
 import { Job } from '../models/job.model.js';
+import { Application } from '../models/application.model.js';
 import { ApiError } from '../utils/ApiError.js';
-import { ROLES, RECRUITER_APPROVAL_STATUSES, USER_STATUSES, JOB_STATUSES } from '../utils/constants.js';
+import { checkEligibility } from './eligibility.service.js';
+import {
+  ROLES,
+  RECRUITER_APPROVAL_STATUSES,
+  USER_STATUSES,
+  JOB_STATUSES
+} from '../utils/constants.js';
 
 export const createJob = async (user, profile, data) => {
   // Domain Rule: Only admin-approved recruiters can create jobs
@@ -15,7 +22,6 @@ export const createJob = async (user, profile, data) => {
     }
   }
 
-  // Derive recruiter ID and company name from verified session
   const companyName = data.companyName ? data.companyName.trim() : profile?.companyName || 'HireTrack Partner';
 
   const job = await Job.create({
@@ -67,7 +73,78 @@ export const getRecruiterJobs = async (recruiterId, { page = 1, limit = 10, stat
   };
 };
 
-export const getJobById = async (jobId, currentUser = null) => {
+/**
+ * Public/Student Job Discovery endpoint.
+ * Server ALWAYS strictly enforces status=published AND applicationDeadline>now.
+ */
+export const getPublishedJobs = async ({
+  q,
+  branch,
+  graduationYear,
+  employmentType,
+  page = 1,
+  limit = 10
+} = {}) => {
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+  const skip = (pageNum - 1) * limitNum;
+
+  // Server-enforced baseline query: MUST be published and not expired
+  const query = {
+    status: JOB_STATUSES.PUBLISHED,
+    applicationDeadline: { $gt: new Date() }
+  };
+
+  if (q && String(q).trim()) {
+    const searchRegex = new RegExp(String(q).trim(), 'i');
+    query.$or = [{ title: searchRegex }, { companyName: searchRegex }, { description: searchRegex }];
+  }
+
+  if (employmentType && String(employmentType).trim()) {
+    query.employmentType = String(employmentType).trim();
+  }
+
+  if (branch && String(branch).trim()) {
+    const branchUpper = String(branch).trim();
+    query.$and = query.$and || [];
+    query.$and.push({
+      $or: [{ eligibleBranches: { $size: 0 } }, { eligibleBranches: branchUpper }]
+    });
+  }
+
+  if (graduationYear && !isNaN(Number(graduationYear))) {
+    const yearNum = Number(graduationYear);
+    query.$and = query.$and || [];
+    query.$and.push({
+      $or: [{ eligibleGraduationYears: { $size: 0 } }, { eligibleGraduationYears: yearNum }]
+    });
+  }
+
+  const [total, jobs] = await Promise.all([
+    Job.countDocuments(query),
+    Job.find(query)
+      .select('-__v')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+  ]);
+
+  const totalPages = Math.ceil(total / limitNum) || 1;
+
+  return {
+    jobs: jobs.map((j) => j.toJSON()),
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages,
+      hasNextPage: pageNum < totalPages,
+      hasPrevPage: pageNum > 1
+    }
+  };
+};
+
+export const getJobById = async (jobId, currentUser = null, studentProfile = null) => {
   const job = await Job.findById(jobId);
   if (!job) {
     throw ApiError.notFound('Job posting not found');
@@ -76,7 +153,7 @@ export const getJobById = async (jobId, currentUser = null) => {
   const isOwner = currentUser && job.recruiterId.toString() === currentUser._id.toString();
   const isAdmin = currentUser && currentUser.role === ROLES.ADMIN;
 
-  // Domain rule: if caller is student or unauthenticated, job must be published and not expired
+  // If caller is student or unauthenticated, job must be published and not expired
   if (!isOwner && !isAdmin) {
     const isDiscoverable =
       job.status === JOB_STATUSES.PUBLISHED && new Date(job.applicationDeadline) > new Date();
@@ -86,7 +163,23 @@ export const getJobById = async (jobId, currentUser = null) => {
     }
   }
 
-  return job.toJSON();
+  const jobJson = job.toJSON();
+
+  // If student caller, attach eligibility summary and application status
+  if (currentUser && currentUser.role === ROLES.STUDENT) {
+    jobJson.eligibility = checkEligibility(studentProfile, jobJson);
+    const existingApp = await Application.findOne({
+      jobId: job._id,
+      studentId: currentUser._id
+    });
+    jobJson.userApplication = {
+      hasApplied: Boolean(existingApp),
+      applicationId: existingApp?._id || null,
+      status: existingApp?.status || null
+    };
+  }
+
+  return jobJson;
 };
 
 export const updateJob = async (jobId, user, updateData) => {
@@ -95,12 +188,11 @@ export const updateJob = async (jobId, user, updateData) => {
     throw ApiError.notFound('Job posting not found');
   }
 
-  // Ownership check: recruiters can only edit their own jobs
+  // Ownership check
   if (user.role === ROLES.RECRUITER && job.recruiterId.toString() !== user._id.toString()) {
     throw ApiError.forbidden("Access denied: You cannot modify another recruiter's job");
   }
 
-  // Allowlist update fields
   const allowedFields = [
     'title',
     'description',
@@ -138,7 +230,6 @@ export const publishJob = async (jobId, user, profile) => {
     throw ApiError.notFound('Job posting not found');
   }
 
-  // Recruiter approval & ownership check
   if (user.role === ROLES.RECRUITER) {
     if (
       profile?.approvalStatus !== RECRUITER_APPROVAL_STATUSES.APPROVED ||
@@ -151,7 +242,6 @@ export const publishJob = async (jobId, user, profile) => {
     }
   }
 
-  // Cannot publish if deadline is in the past
   if (new Date(job.applicationDeadline) <= new Date()) {
     throw ApiError.badRequest('Cannot publish job with an expired application deadline');
   }

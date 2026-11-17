@@ -39,3 +39,4 @@ export const updateRecruiterProfileValidator = [
       throw new Error('Approval status is managed by administrators only');
     })
 ];
+

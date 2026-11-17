@@ -1,12 +1,17 @@
 import { Router } from 'express';
 import * as jobController from '../controllers/job.controller.js';
+import * as applicationController from '../controllers/application.controller.js';
 import { protect, authorizeRoles } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { createJobValidator, updateJobValidator } from '../validators/job.validator.js';
+import { applyJobValidator } from '../validators/application.validator.js';
 import { validateObjectId } from '../validators/common.validator.js';
 import { ROLES } from '../utils/constants.js';
 
 const router = Router();
+
+// Discover published jobs (authenticated)
+router.get('/', protect, jobController.getPublishedJobs);
 
 // Create new job (Approved Recruiter)
 router.post(
@@ -58,6 +63,24 @@ router.patch(
   authorizeRoles(ROLES.RECRUITER, ROLES.ADMIN),
   validate(validateObjectId('jobId')),
   jobController.closeJob
+);
+
+// Student apply to job
+router.post(
+  '/:jobId/applications',
+  protect,
+  authorizeRoles(ROLES.STUDENT),
+  validate([...validateObjectId('jobId'), ...applyJobValidator]),
+  applicationController.applyToJob
+);
+
+// Recruiter list applicants for job
+router.get(
+  '/:jobId/applications',
+  protect,
+  authorizeRoles(ROLES.RECRUITER, ROLES.ADMIN),
+  validate(validateObjectId('jobId')),
+  applicationController.getJobApplicants
 );
 
 export default router;

@@ -11,6 +11,24 @@ export const createJob = asyncHandler(async (req, res) => {
   });
 });
 
+export const getPublishedJobs = asyncHandler(async (req, res) => {
+  const { q, branch, graduationYear, employmentType, page, limit } = req.query;
+  const result = await jobService.getPublishedJobs({
+    q,
+    branch,
+    graduationYear,
+    employmentType,
+    page,
+    limit
+  });
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: 'Published jobs retrieved successfully',
+    data: result.jobs,
+    pagination: result.pagination
+  });
+});
+
 export const getMyJobs = asyncHandler(async (req, res) => {
   const { page, limit, status } = req.query;
   const result = await jobService.getRecruiterJobs(req.user._id, { page, limit, status });
@@ -23,7 +41,7 @@ export const getMyJobs = asyncHandler(async (req, res) => {
 });
 
 export const getJobById = asyncHandler(async (req, res) => {
-  const result = await jobService.getJobById(req.params.jobId, req.user);
+  const result = await jobService.getJobById(req.params.jobId, req.user, req.profile);
   return sendSuccess(res, {
     statusCode: 200,
     message: 'Job details retrieved successfully',

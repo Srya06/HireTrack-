@@ -70,16 +70,7 @@ const jobSchema = new mongoose.Schema(
     applicationDeadline: {
       type: Date,
       required: [true, 'Application deadline is required'],
-      validate: {
-        validator: function (value) {
-          // Only enforce future deadline upon initial creation or when deadline is modified
-          if (this.isModified('applicationDeadline') && this.isNew) {
-            return value > new Date();
-          }
-          return true;
-        },
-        message: 'Application deadline must be a future date'
-      }
+      index: true
     },
     status: {
       type: String,
@@ -119,3 +110,4 @@ jobSchema.index({ status: 1, applicationDeadline: 1 });
 jobSchema.index({ recruiterId: 1, createdAt: -1 });
 
 export const Job = mongoose.model('Job', jobSchema);
+

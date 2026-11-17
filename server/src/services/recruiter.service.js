@@ -28,3 +28,4 @@ export const updateRecruiterProfile = async (userId, updateData) => {
   await profile.save();
   return profile.toJSON();
 };
+

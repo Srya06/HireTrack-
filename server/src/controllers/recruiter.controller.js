@@ -19,3 +19,4 @@ export const updateMe = asyncHandler(async (req, res) => {
     data: result
   });
 });
+
