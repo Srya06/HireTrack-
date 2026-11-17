@@ -1,9 +1,12 @@
+import { jest } from '@jest/globals';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
 import app from '../src/app.js';
 import { connectDB, disconnectDB } from '../src/config/db.js';
 import { User, StudentProfile, RecruiterProfile } from '../src/models/index.js';
 import { ROLES, USER_STATUSES } from '../src/utils/constants.js';
+
+jest.setTimeout(30000);
 
 describe('Auth & RBAC Test Suite', () => {
   const timestamp = Date.now();

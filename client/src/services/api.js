@@ -24,6 +24,17 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
+    // 401 Handling: clear stored token on session expiry / unauthorized on protected endpoints
+    if (error.response?.status === 401) {
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      if (!isLoginRequest) {
+        localStorage.removeItem('hiretrack_token');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('hiretrack:unauthorized'));
+        }
+      }
+    }
+
     const errorResponse = error.response?.data || {
       success: false,
       message: error.message || 'Network error occurred',

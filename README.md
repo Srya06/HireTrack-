@@ -139,3 +139,4 @@ Tests include:
 5. **Student & Admin Real-Time Verification:**
    - Student navigates to **My Applications** $\to$ **History** to view the chronological timeline and interview invite details.
    - Admin navigates to **Dashboard Overview** (`/admin/dashboard`) to view live counts and updated placement statistics.
+

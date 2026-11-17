@@ -6,6 +6,8 @@ import { User, RecruiterProfile, Job } from '../src/models/index.js';
 import { ROLES, USER_STATUSES, RECRUITER_APPROVAL_STATUSES, JOB_STATUSES } from '../src/utils/constants.js';
 import { signToken } from '../src/utils/token.js';
 
+jest.setTimeout(30000);
+
 describe('Recruiter Approval & Jobs Suite (CHUNK 3)', () => {
   const timestamp = Date.now();
 

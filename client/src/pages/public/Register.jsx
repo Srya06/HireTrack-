@@ -42,10 +42,57 @@ export default function Register() {
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const validate = () => {
+    const errors = {};
+    if (!name.trim()) {
+      errors.name = 'Full name is required';
+    } else if (name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters';
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      errors.email = 'Email address is required';
+    } else if (!emailRegex.test(email.trim())) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!password) {
+      errors.password = 'Password is required';
+    } else if (password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
+    } else if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+      errors.password = 'Password must contain at least one letter and one number';
+    }
+
+    if (role === 'student') {
+      if (!studentId.trim()) {
+        errors.studentId = 'Student ID (USN) is required';
+      }
+      const numCgpa = parseFloat(cgpa);
+      if (isNaN(numCgpa) || numCgpa < 0 || numCgpa > 10) {
+        errors.cgpa = 'CGPA must be a valid number between 0.0 and 10.0';
+      }
+    } else {
+      if (!companyName.trim()) {
+        errors.companyName = 'Company name is required';
+      }
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
+
+    if (!validate()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -123,7 +170,7 @@ export default function Register() {
         </div>
 
         <Card>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form noValidate onSubmit={handleSubmit} className="space-y-4">
             {errorMessage && (
               <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start space-x-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -143,7 +190,11 @@ export default function Register() {
                 label="Full Name"
                 id="reg-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (fieldErrors.name) setFieldErrors(prev => ({ ...prev, name: '' }));
+                }}
+                error={fieldErrors.name}
                 placeholder={role === 'student' ? 'e.g. Rahul Sharma' : 'e.g. John Doe (HR)'}
                 required
               />
@@ -153,7 +204,11 @@ export default function Register() {
                 id="reg-email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: '' }));
+                }}
+                error={fieldErrors.email}
                 placeholder="you@domain.com"
                 required
               />
@@ -164,7 +219,11 @@ export default function Register() {
               id="reg-password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: '' }));
+              }}
+              error={fieldErrors.password}
               placeholder="Min 8 characters (letters & numbers)"
               helperText="Must be at least 8 characters with at least one letter and one number"
               required
@@ -182,7 +241,11 @@ export default function Register() {
                     label="Student ID (USN / Roll No)"
                     id="reg-studentId"
                     value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
+                    onChange={(e) => {
+                      setStudentId(e.target.value);
+                      if (fieldErrors.studentId) setFieldErrors(prev => ({ ...prev, studentId: '' }));
+                    }}
+                    error={fieldErrors.studentId}
                     placeholder="e.g. 1RV22CS001"
                     required
                   />
@@ -217,7 +280,11 @@ export default function Register() {
                     max="10"
                     step="0.01"
                     value={cgpa}
-                    onChange={(e) => setCgpa(e.target.value)}
+                    onChange={(e) => {
+                      setCgpa(e.target.value);
+                      if (fieldErrors.cgpa) setFieldErrors(prev => ({ ...prev, cgpa: '' }));
+                    }}
+                    error={fieldErrors.cgpa}
                     placeholder="8.5"
                     required
                   />
@@ -242,7 +309,11 @@ export default function Register() {
                   label="Company Name"
                   id="reg-companyName"
                   value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                  onChange={(e) => {
+                    setCompanyName(e.target.value);
+                    if (fieldErrors.companyName) setFieldErrors(prev => ({ ...prev, companyName: '' }));
+                  }}
+                  error={fieldErrors.companyName}
                   placeholder="e.g. Microsoft India, Infosys, Cisco"
                   required
                 />

@@ -22,8 +22,10 @@ export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const handleLogout = async () => {
+    setUserMenuOpen(false);
     await logout();
     navigate('/login');
   };
@@ -219,15 +221,90 @@ export default function DashboardLayout() {
             </h1>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <span className="hidden sm:inline-block text-xs text-slate-500">
-              {user?.email}
-            </span>
-            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-              {user?.name?.charAt(0) || 'U'}
-            </div>
+          <div className="relative">
+            <button
+              onClick={() => setUserMenuOpen((prev) => !prev)}
+              className="flex items-center space-x-2.5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              aria-expanded={userMenuOpen}
+              aria-label="User account menu"
+            >
+              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                {user?.name?.charAt(0) || 'U'}
+              </div>
+              <div className="hidden sm:block text-left">
+                <span className="block text-xs font-semibold text-slate-800 leading-tight">
+                  {user?.name}
+                </span>
+                <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                  {user?.role}
+                </span>
+              </div>
+            </button>
+
+            {/* User Dropdown Menu */}
+            {userMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setUserMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white border border-slate-200 shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="px-4 py-2 border-b border-slate-100">
+                    <p className="text-xs font-bold text-slate-900 truncate">{user?.name}</p>
+                    <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
+                    <div className="mt-1.5">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider ${
+                        roleColors[user?.role] || 'bg-slate-100 text-slate-700 border-slate-200'
+                      }`}>
+                        {user?.role}
+                      </span>
+                    </div>
+                  </div>
+
+                  {user?.role === 'student' && (
+                    <NavLink
+                      to="/student/profile"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                    >
+                      Profile & Resume
+                    </NavLink>
+                  )}
+
+                  {user?.role === 'recruiter' && (
+                    <NavLink
+                      to="/recruiter/profile"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                    >
+                      Company Profile
+                    </NavLink>
+                  )}
+
+                  <div className="border-t border-slate-100 mt-1 pt-1">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center space-x-2 font-medium"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </header>
+
+        {/* Global Pending Recruiter Notice Banner */}
+        {user?.role === 'recruiter' && user?.accountStatus === 'pending' && (
+          <div className="bg-amber-500 text-white px-4 py-2.5 text-xs flex items-center justify-between shadow-sm">
+            <div className="flex items-center space-x-2 mx-auto">
+              <span className="font-bold">Notice:</span>
+              <span>Your recruiter account is awaiting placement-cell approval. You will be able to publish job drives once verified.</span>
+            </div>
+          </div>
+        )}
 
         {/* Page Content Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">

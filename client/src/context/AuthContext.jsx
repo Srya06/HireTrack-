@@ -42,6 +42,20 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
+  // Listen for 401 unauthorized interceptor events
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('hiretrack_token');
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('hiretrack:unauthorized', handleUnauthorized);
+      return () => window.removeEventListener('hiretrack:unauthorized', handleUnauthorized);
+    }
+  }, []);
+
   const login = async (credentials) => {
     setError(null);
     try {

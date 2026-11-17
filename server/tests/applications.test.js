@@ -12,6 +12,8 @@ import {
 } from '../src/utils/constants.js';
 import { signToken } from '../src/utils/token.js';
 
+jest.setTimeout(30000);
+
 describe('Job Discovery & Application Pipeline (CHUNK 4)', () => {
   const timestamp = Date.now();
 

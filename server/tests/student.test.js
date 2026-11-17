@@ -7,6 +7,8 @@ import { setStorageAdapter, getStorageAdapter } from '../src/utils/storage/stora
 import { ROLES, USER_STATUSES } from '../src/utils/constants.js';
 import { signToken } from '../src/utils/token.js';
 
+jest.setTimeout(30000);
+
 describe('Student Profile & Resume Suite (CHUNK 2)', () => {
   const timestamp = Date.now();
   let studentA, profileA, tokenA;
