@@ -37,3 +37,4 @@ export const updateById = asyncHandler(async (req, res) => {
     data: result
   });
 });
+

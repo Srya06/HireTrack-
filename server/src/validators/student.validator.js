@@ -49,3 +49,4 @@ export const updateStudentProfileValidator = [
       throw new Error('Student ID is immutable and cannot be updated');
     })
 ];
+

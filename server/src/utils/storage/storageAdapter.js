@@ -130,3 +130,4 @@ export const getStorageAdapter = () => {
 export const setStorageAdapter = (adapter) => {
   currentStorageInstance = adapter;
 };
+

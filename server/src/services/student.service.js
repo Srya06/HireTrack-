@@ -104,3 +104,4 @@ export const updateStudentProfileById = async (requesterUser, targetId, updateDa
 
   return updateStudentProfile(profile.userId, updateData);
 };
+

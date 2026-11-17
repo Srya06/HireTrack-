@@ -44,3 +44,4 @@ export const checkProfileCompleteness = (profile) => {
 export const isStudentProfileComplete = (profile) => {
   return checkProfileCompleteness(profile).isComplete;
 };
+
