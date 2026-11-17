@@ -17,6 +17,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import StatusBadge from '../components/StatusBadge.jsx';
+import NotificationBell from '../components/NotificationBell.jsx';
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
@@ -221,13 +222,16 @@ export default function DashboardLayout() {
             </h1>
           </div>
 
-          <div className="relative">
-            <button
-              onClick={() => setUserMenuOpen((prev) => !prev)}
-              className="flex items-center space-x-2.5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              aria-expanded={userMenuOpen}
-              aria-label="User account menu"
-            >
+          <div className="flex items-center space-x-3">
+            <NotificationBell />
+
+            <div className="relative">
+              <button
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+                className="flex items-center space-x-2.5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                aria-expanded={userMenuOpen}
+                aria-label="User account menu"
+              >
               <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
                 {user?.name?.charAt(0) || 'U'}
               </div>
@@ -293,6 +297,7 @@ export default function DashboardLayout() {
                 </div>
               </>
             )}
+            </div>
           </div>
         </header>
 

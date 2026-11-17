@@ -9,3 +9,4 @@ export { default as Pagination } from './Pagination.jsx';
 export { default as DataTable } from './DataTable.jsx';
 export { default as JobCard } from './JobCard.jsx';
 export { default as ApplicationTimeline } from './ApplicationTimeline.jsx';
+export { default as NotificationBell } from './NotificationBell.jsx';

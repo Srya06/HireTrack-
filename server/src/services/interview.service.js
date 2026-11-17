@@ -2,6 +2,7 @@ import { Interview } from '../models/interview.model.js';
 import { Application } from '../models/application.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import { validateStatusTransition } from './statusTransition.service.js';
+import { createNotification } from './notification.service.js';
 import { ROLES, APPLICATION_STATUSES, INTERVIEW_STATUSES } from '../utils/constants.js';
 
 export const scheduleInterview = async (
@@ -51,6 +52,24 @@ export const scheduleInterview = async (
     notes: notes ? notes.trim() : '',
     status: INTERVIEW_STATUSES.SCHEDULED
   });
+
+  // Notify candidate of interview
+  try {
+    const jobTitle = application.jobId?.title || 'Job';
+    const dateFormatted = new Date(scheduledAt).toLocaleString('en-US', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+    await createNotification({
+      userId: application.studentId,
+      type: 'interview_scheduled',
+      title: 'Interview Scheduled',
+      message: `An interview for "${jobTitle}" has been scheduled for ${dateFormatted} (${mode}).`,
+      link: `/student/applications/${application._id}`
+    });
+  } catch (err) {
+    console.error('[InterviewService] Failed to send interview notification:', err.message);
+  }
 
   return {
     interview: interview.toJSON(),

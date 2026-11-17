@@ -13,7 +13,8 @@ HireTrack is an end-to-end, role-based placement management platform designed fo
 - **Backend:** Node.js LTS, Express.js (Native ES Modules), Mongoose ODM, MongoDB (Atlas cluster with automated deterministic in-memory fallback for testing).
 - **Frontend:** React 18, Vite, Tailwind CSS, React Router v6, Axios, Lucide React, Recharts.
 - **Security & RBAC:** Verified JWT authentication, bcryptjs password hashing (10–12 salt rounds), Helmet security headers, CORS origin whitelisting, rate limiting on `/auth` (20 req / 15 min), role and resource ownership verification server-side, strict field allowlisting on all mutations, and no secret leakage in logs.
-- **Testing:** Jest + Supertest (Server test suite — 85 tests) & Vitest + React Testing Library (Client test suite — 34 tests) + End-to-End Demo Script (8 passing steps).
+- **In-App Notifications:** Real-time event notifications for application status updates, interview schedules, and recruiter approvals, with owner-only access, unread counters, and topbar bell popover dropdown with auto-polling.
+- **Testing:** Jest + Supertest (Server test suite — 93 tests across 8 suites) & Vitest + React Testing Library (Client test suite — 39 tests across 7 suites) = 132 automated tests passing + End-to-End Demo Script (8 passing steps).
 
 ---
 

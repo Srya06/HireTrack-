@@ -5,6 +5,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { checkEligibility } from './eligibility.service.js';
 import { validateStatusTransition, isTerminalStatus } from './statusTransition.service.js';
 import { isStudentProfileComplete } from '../utils/profileCompleteness.js';
+import { createNotification } from './notification.service.js';
 import { ROLES, JOB_STATUSES, APPLICATION_STATUSES } from '../utils/constants.js';
 
 export const applyToJob = async (jobId, studentUser, studentProfile, { coverLetter } = {}) => {
@@ -245,6 +246,22 @@ export const updateApplicationStatus = async (applicationId, user, { status: new
   });
 
   await application.save();
+
+  // Create notification for student
+  try {
+    const jobTitle = application.jobId?.title || 'Job';
+    const readableStatus = newStatus.replace(/_/g, ' ');
+    await createNotification({
+      userId: application.studentId,
+      type: 'application_status',
+      title: 'Application Status Updated',
+      message: `Your application status for "${jobTitle}" was updated to ${readableStatus}.`,
+      link: `/student/applications/${application._id}`
+    });
+  } catch (err) {
+    console.error('[ApplicationService] Failed to send status notification:', err.message);
+  }
+
   return application.toJSON();
 };
 

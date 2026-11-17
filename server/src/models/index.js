@@ -5,3 +5,4 @@ export { Job } from './job.model.js';
 export { Application } from './application.model.js';
 export { Interview } from './interview.model.js';
 export { AuditLog } from './auditLog.model.js';
+export { Notification } from './notification.model.js';

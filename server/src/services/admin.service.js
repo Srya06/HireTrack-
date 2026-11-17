@@ -7,6 +7,7 @@ import {
 } from '../models/index.js';
 import { ApiError } from '../utils/ApiError.js';
 import { logAdminAction } from '../utils/auditLogger.js';
+import { createNotification } from './notification.service.js';
 import {
   ROLES,
   USER_STATUSES,
@@ -90,6 +91,22 @@ export const updateRecruiterApproval = async (recruiterProfileId, { approvalStat
       recruiterEmail: user.email
     }
   });
+
+  // Notify recruiter
+  try {
+    const isApproved = approvalStatus === RECRUITER_APPROVAL_STATUSES.APPROVED;
+    await createNotification({
+      userId: profile.userId,
+      type: 'recruiter_approval',
+      title: isApproved ? 'Recruiter Account Approved' : 'Recruiter Account Status Updated',
+      message: isApproved
+        ? 'Congratulations! Your recruiter profile has been approved by the placement cell. You may now publish jobs.'
+        : 'Your recruiter profile approval request has been rejected. Please reach out to the placement cell.',
+      link: '/recruiter/dashboard'
+    });
+  } catch (err) {
+    console.error('[AdminService] Failed to send recruiter approval notification:', err.message);
+  }
 
   return {
     recruiter: profile.toJSON(),
