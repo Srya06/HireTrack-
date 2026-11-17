@@ -4,10 +4,8 @@ import { connectDB, disconnectDB } from './config/db.js';
 
 const startServer = async () => {
   try {
-    // Attempt DB connection (non-fatal in dev so server & health endpoints still start)
-    connectDB().catch((err) => {
-      console.warn(`[HireTrack Server] Initial DB connection failed (${err.message}).`);
-    });
+    // Await database connection before listening for traffic
+    await connectDB();
 
     const server = app.listen(env.PORT, () => {
       console.log(`[HireTrack Server] Running in ${env.NODE_ENV} mode on port ${env.PORT}`);

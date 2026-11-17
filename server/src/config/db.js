@@ -57,12 +57,47 @@ export const connectDB = async (uri = env.MONGODB_URI) => {
 
     return conn.connection;
   } catch (error) {
-    console.error(`[Database] MongoDB connection failed: ${error.message}`);
+    console.error(`[Database] MongoDB Atlas connection failed: ${error.message}`);
     // In production, failure to connect to DB at startup is fatal
     if (env.isProduction) {
       process.exit(1);
     }
-    return null;
+
+    // In development mode, if Atlas IP whitelist or network blocks, automatically fall back to cached in-memory MongoDB
+    console.warn(
+      '[Database] Falling back to automated in-memory MongoDB server for local development...'
+    );
+
+    try {
+      if (!mongodInstance) {
+        const cachedBinary = path.resolve(
+          __dirname,
+          '../../node_modules/.cache/mongodb-memory-server/mongod-x64-win32-8.2.6.exe'
+        );
+        process.env.MONGOMS_SYSTEM_BINARY = cachedBinary;
+        const { MongoMemoryServer } = await import('mongodb-memory-server');
+        mongodInstance = await MongoMemoryServer.create();
+      }
+      const memUri = mongodInstance.getUri();
+      const conn = await mongoose.connect(memUri, {
+        autoIndex: true
+      });
+      isConnected = true;
+      console.log(`[Database] In-memory MongoDB connected: ${conn.connection.host}/${conn.connection.name}`);
+
+      // Auto-populate demo dataset for instant local exploration
+      try {
+        const { seedDemo } = await import('../scripts/seedDemo.js');
+        await seedDemo();
+      } catch (seedErr) {
+        console.warn('[Database] Auto-seeding skipped:', seedErr.message);
+      }
+
+      return conn.connection;
+    } catch (fallbackErr) {
+      console.error('[Database] In-memory fallback failed:', fallbackErr.message);
+      return null;
+    }
   }
 };
 

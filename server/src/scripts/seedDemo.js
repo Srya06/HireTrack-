@@ -211,23 +211,20 @@ export const seedDemo = async () => {
     const deadline1 = new Date();
     deadline1.setDate(deadline1.getDate() + 21);
 
-    let job1 = await Job.findOne({ title: 'Associate Cloud Software Engineer', recruiterId: approvedRecProfile._id });
+    let job1 = await Job.findOne({ title: 'Associate Cloud Software Engineer', recruiterId: approvedRecUser._id });
     if (!job1) {
       job1 = await Job.create({
-        recruiterId: approvedRecProfile._id,
+        recruiterId: approvedRecUser._id,
+        companyName: 'Google Cloud Platform',
         title: 'Associate Cloud Software Engineer',
         description: 'Design and implement resilient backend cloud services supporting millions of global developers.',
-        requirements: 'Strong fundamentals in Data Structures, Algorithms, RESTful APIs, and basic containerization concepts.',
-        department: 'Cloud Infrastructure',
         location: 'Bengaluru (Hybrid)',
         employmentType: 'full_time',
-        salaryRange: '18 - 24 LPA',
+        ctc: '18 - 24 LPA',
         applicationDeadline: deadline1,
-        eligibilityCriteria: {
-          minCgpa: 8.0,
-          allowedBranches: ['CSE', 'ISE', 'AIML', 'DATA_SCIENCE'],
-          allowedGraduationYears: [2026]
-        },
+        minCgpa: 8.0,
+        eligibleBranches: ['CSE', 'ISE', 'AIML'],
+        eligibleGraduationYears: [2026],
         status: JOB_STATUSES.PUBLISHED
       });
       console.log('  ✔ Created Published Job: Associate Cloud Software Engineer');
@@ -236,23 +233,20 @@ export const seedDemo = async () => {
     const deadline2 = new Date();
     deadline2.setDate(deadline2.getDate() + 35);
 
-    let job2 = await Job.findOne({ title: 'Systems Infrastructure Intern', recruiterId: approvedRecProfile._id });
+    let job2 = await Job.findOne({ title: 'Systems Infrastructure Intern', recruiterId: approvedRecUser._id });
     if (!job2) {
       job2 = await Job.create({
-        recruiterId: approvedRecProfile._id,
+        recruiterId: approvedRecUser._id,
+        companyName: 'Google Cloud Platform',
         title: 'Systems Infrastructure Intern',
         description: '6-month pre-placement internship working directly with site reliability and Linux systems kernel teams.',
-        requirements: 'Linux fundamentals, scripting in Python or Bash, and networking concepts.',
-        department: 'Core Infrastructure',
         location: 'Hyderabad',
         employmentType: 'internship',
-        salaryRange: '75,000 / month Stipend',
+        ctc: '75,000 / month Stipend',
         applicationDeadline: deadline2,
-        eligibilityCriteria: {
-          minCgpa: 7.0,
-          allowedBranches: ['CSE', 'ISE', 'ECE', 'EEE', 'AIML'],
-          allowedGraduationYears: [2026, 2027]
-        },
+        minCgpa: 7.0,
+        eligibleBranches: ['CSE', 'ISE', 'ECE', 'EEE', 'AIML'],
+        eligibleGraduationYears: [2026, 2027],
         status: JOB_STATUSES.DRAFT
       });
       console.log('  ✔ Created Draft Job: Systems Infrastructure Intern');
@@ -296,6 +290,7 @@ export const seedDemo = async () => {
 
       await Interview.create({
         applicationId: app1._id,
+        scheduledBy: approvedRecUser._id,
         scheduledAt: interviewTime,
         mode: INTERVIEW_MODES.ONLINE,
         locationOrLink: 'https://meet.google.com/hiretrack-round1',
@@ -316,14 +311,16 @@ export const seedDemo = async () => {
     console.log('  • Student 3: ananya.sen@hiretrack.edu       / Student@123456   (ECE, 7.2 CGPA)');
     console.log('========================================================================\n');
 
-    await disconnectDB();
     if (process.argv[1] && process.argv[1].endsWith('seedDemo.js')) {
+      await disconnectDB();
       process.exit(0);
     }
   } catch (error) {
     console.error('[Seed Demo] Error:', error);
-    await disconnectDB().catch(() => {});
-    process.exit(1);
+    if (process.argv[1] && process.argv[1].endsWith('seedDemo.js')) {
+      await disconnectDB().catch(() => {});
+      process.exit(1);
+    }
   }
 };
 
