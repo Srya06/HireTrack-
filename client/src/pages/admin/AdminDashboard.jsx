@@ -144,6 +144,42 @@ export default function AdminDashboard() {
         />
       </div>
 
+      {/* Applications Pipeline Overview */}
+      <Card
+        title="Applications Funnel Overview"
+        subtitle="Institutional breakdown of all student applications across placement lifecycle stages"
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-2">
+          {Object.entries({
+            applied: { label: 'Applied', color: 'indigo' },
+            under_review: { label: 'Under Review', color: 'sky' },
+            shortlisted: { label: 'Shortlisted', color: 'amber' },
+            interview_scheduled: { label: 'Interview Scheduled', color: 'purple' },
+            selected: { label: 'Selected / Offer', color: 'emerald' },
+            rejected: { label: 'Rejected', color: 'rose' },
+            withdrawn: { label: 'Withdrawn', color: 'slate' }
+          }).map(([key, config]) => {
+            const count = data.statusBreakdown?.[key] || 0;
+            const percentage =
+              data.applications > 0 ? Math.round((count / data.applications) * 100) : 0;
+            return (
+              <div
+                key={key}
+                className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center space-y-1"
+              >
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                  {config.label}
+                </div>
+                <div className="text-xl font-bold text-slate-900">{count}</div>
+                <div className="text-[10px] text-slate-400 font-medium">
+                  {percentage}% of total
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
       {/* Visual Analytics Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
