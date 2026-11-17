@@ -26,6 +26,15 @@ const TYPE_OPTIONS = [
   { value: 'internship_to_full_time', label: 'Internship to Full Time' }
 ];
 
+const GRAD_YEAR_OPTIONS = [
+  { value: '', label: 'All Batches (Graduation Years)' },
+  { value: '2024', label: 'Class of 2024' },
+  { value: '2025', label: 'Class of 2025' },
+  { value: '2026', label: 'Class of 2026' },
+  { value: '2027', label: 'Class of 2027' },
+  { value: '2028', label: 'Class of 2028' }
+];
+
 export default function JobsBrowse() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
@@ -37,6 +46,7 @@ export default function JobsBrowse() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
   const [selectedType, setSelectedType] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -50,7 +60,8 @@ export default function JobsBrowse() {
         limit: 9,
         ...(searchTerm.trim() && { q: searchTerm.trim() }),
         ...(selectedBranch && { branch: selectedBranch }),
-        ...(selectedType && { employmentType: selectedType })
+        ...(selectedType && { employmentType: selectedType }),
+        ...(selectedYear && { graduationYear: selectedYear })
       };
 
       const [jobsRes, appsRes] = await Promise.allSettled([
@@ -79,7 +90,7 @@ export default function JobsBrowse() {
 
   useEffect(() => {
     fetchJobs();
-  }, [page, selectedBranch, selectedType]);
+  }, [page, selectedBranch, selectedType, selectedYear]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -115,7 +126,7 @@ export default function JobsBrowse() {
           </Button>
         </form>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
           <FormField
             id="filter-branch"
             type="select"
@@ -136,6 +147,17 @@ export default function JobsBrowse() {
               setPage(1);
             }}
             options={TYPE_OPTIONS}
+          />
+
+          <FormField
+            id="filter-year"
+            type="select"
+            value={selectedYear}
+            onChange={(e) => {
+              setSelectedYear(e.target.value);
+              setPage(1);
+            }}
+            options={GRAD_YEAR_OPTIONS}
           />
         </div>
       </div>

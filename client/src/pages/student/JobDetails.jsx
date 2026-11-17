@@ -82,6 +82,7 @@ export default function JobDetails() {
   }, [jobId]);
 
   const handleConfirmApply = async () => {
+    if (submitting) return; // double-click protection
     setApplyError('');
     setSubmitting(true);
     try {
@@ -95,7 +96,14 @@ export default function JobDetails() {
         }, 1200);
       }
     } catch (err) {
-      setApplyError(err.message || 'Failed to submit application');
+      const msg = err.message || '';
+      if (msg.includes('already applied') || err.statusCode === 409) {
+        setApplyError("You've already applied for this opportunity.");
+      } else if (msg.includes('eligible') || msg.includes('criteria')) {
+        setApplyError("You don't currently meet this job's listed eligibility criteria.");
+      } else {
+        setApplyError(msg || 'Failed to submit application. Please check your profile and try again.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -238,8 +246,8 @@ export default function JobDetails() {
               </p>
             ) : (
               <div className="space-y-1 text-amber-800">
-                <p>You currently do not satisfy one or more listed requirements:</p>
-                <ul className="list-disc list-inside space-y-0.5 font-medium pl-1">
+                <p className="font-semibold">You don't currently meet this job's listed eligibility criteria.</p>
+                <ul className="list-disc list-inside space-y-0.5 font-medium pl-1 text-[11px]">
                   {eligibility.reasons?.map((r, i) => (
                     <li key={i}>{r}</li>
                   ))}

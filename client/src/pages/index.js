@@ -10,6 +10,7 @@ export { default as StudentDashboard } from './student/StudentDashboard.jsx';
 export { default as JobsBrowse } from './student/JobsBrowse.jsx';
 export { default as JobDetails } from './student/JobDetails.jsx';
 export { default as MyApplications } from './student/MyApplications.jsx';
+export { default as ApplicationDetails } from './student/ApplicationDetails.jsx';
 export { default as StudentProfile } from './student/StudentProfile.jsx';
 
 // Recruiter

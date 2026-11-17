@@ -22,38 +22,58 @@ export default function StudentDashboard() {
   const [profile, setProfile] = useState(null);
   const [applications, setApplications] = useState([]);
   const [activeJobs, setActiveJobs] = useState([]);
+  const [totalJobsCount, setTotalJobsCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [profRes, appsRes, jobsRes] = await Promise.allSettled([
+        studentService.getMyProfile(),
+        applicationService.getMyApplications({ limit: 100 }),
+        jobService.getJobs({ limit: 6 })
+      ]);
+
+      if (profRes.status === 'fulfilled' && profRes.value.data) {
+        setProfile(profRes.value.data);
+      }
+      if (appsRes.status === 'fulfilled' && appsRes.value.data) {
+        setApplications(appsRes.value.data.applications || []);
+      }
+      if (jobsRes.status === 'fulfilled' && jobsRes.value.data) {
+        setActiveJobs(jobsRes.value.data.jobs || []);
+        setTotalJobsCount(jobsRes.value.data.pagination?.total || (jobsRes.value.data.jobs || []).length);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        const [profRes, appsRes, jobsRes] = await Promise.allSettled([
-          studentService.getMyProfile(),
-          applicationService.getMyApplications({ limit: 5 }),
-          jobService.getJobs({ limit: 4 })
-        ]);
-
-        if (profRes.status === 'fulfilled' && profRes.value.data) {
-          setProfile(profRes.value.data);
-        }
-        if (appsRes.status === 'fulfilled' && appsRes.value.data) {
-          setApplications(appsRes.value.data.applications || []);
-        }
-        if (jobsRes.status === 'fulfilled' && jobsRes.value.data) {
-          setActiveJobs(jobsRes.value.data.jobs || []);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadDashboardData();
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <p className="text-xs text-slate-500 font-medium">Loading your placement dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl border border-rose-200 p-8 text-center space-y-3">
+        <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
+        <p className="text-sm font-semibold text-rose-800">{error}</p>
+        <Button variant="outline" size="sm" onClick={loadDashboardData}>
+          Try Again
+        </Button>
       </div>
     );
   }
@@ -62,7 +82,15 @@ export default function StudentDashboard() {
   const completeness = profile?.profileCompleteness?.percentage ?? (profile?.resume?.url ? 100 : 75);
   const hasResume = !!profile?.resume?.url;
 
-  // Compute stat counts
+  // Compute status summary counts
+  const statusCounts = {
+    applied: applications.filter((a) => a.status === 'applied').length,
+    under_review: applications.filter((a) => a.status === 'under_review').length,
+    shortlisted: applications.filter((a) => a.status === 'shortlisted').length,
+    interview_scheduled: applications.filter((a) => a.status === 'interview_scheduled').length,
+    selected: applications.filter((a) => a.status === 'selected').length
+  };
+
   const totalApps = applications.length;
   const shortlistedApps = applications.filter((a) =>
     ['shortlisted', 'interview_scheduled', 'selected'].includes(a.status)
@@ -136,6 +164,38 @@ export default function StudentDashboard() {
         />
       </div>
 
+      {/* Application Status Funnel Summary */}
+      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-2">
+        <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
+          <span>Application Pipeline Summary</span>
+          <Link to="/student/applications" className="text-indigo-600 hover:underline">
+            View Application Details &rarr;
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
+          <div className="bg-sky-50 border border-sky-100 rounded-lg p-2.5 text-center">
+            <span className="text-xs text-sky-700 font-medium block">Applied</span>
+            <span className="text-xl font-bold text-sky-900">{statusCounts.applied}</span>
+          </div>
+          <div className="bg-amber-50 border border-amber-100 rounded-lg p-2.5 text-center">
+            <span className="text-xs text-amber-700 font-medium block">Under Review</span>
+            <span className="text-xl font-bold text-amber-900">{statusCounts.under_review}</span>
+          </div>
+          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-2.5 text-center">
+            <span className="text-xs text-indigo-700 font-medium block">Shortlisted</span>
+            <span className="text-xl font-bold text-indigo-900">{statusCounts.shortlisted}</span>
+          </div>
+          <div className="bg-purple-50 border border-purple-100 rounded-lg p-2.5 text-center">
+            <span className="text-xs text-purple-700 font-medium block">Interviews</span>
+            <span className="text-xl font-bold text-purple-900">{statusCounts.interview_scheduled}</span>
+          </div>
+          <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 text-center">
+            <span className="text-xs text-emerald-700 font-medium block">Selected (Offers)</span>
+            <span className="text-xl font-bold text-emerald-900">{statusCounts.selected}</span>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Applications Card */}
         <Card
@@ -152,7 +212,7 @@ export default function StudentDashboard() {
           {applications.length === 0 ? (
             <div className="text-center py-8 text-slate-500 space-y-3">
               <FileText className="w-8 h-8 text-slate-300 mx-auto" />
-              <p className="text-sm">You haven't applied to any jobs yet.</p>
+              <p className="text-sm font-medium">You haven't applied to any jobs yet.</p>
               <Link to="/student/jobs">
                 <Button variant="outline" size="sm">
                   Explore Opportunities
@@ -169,6 +229,11 @@ export default function StudentDashboard() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <StatusBadge status={app.status} size="sm" />
+                    <Link to={`/student/applications/${app._id}`}>
+                      <Button variant="ghost" size="sm">
+                        View
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -178,7 +243,7 @@ export default function StudentDashboard() {
 
         {/* Featured / Open Jobs Card */}
         <Card
-          title="Open Opportunities"
+          title={`Active Opportunities (${totalJobsCount})`}
           subtitle="Recently published campus drives"
           action={
             <Link to="/student/jobs">

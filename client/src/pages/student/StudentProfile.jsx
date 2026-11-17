@@ -100,17 +100,15 @@ export default function StudentProfile() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setFeedback({ type: 'error', message: 'File size exceeds 5MB limit.' });
-      return;
-    }
-
-    // Check extension
+    // Check size (5MB) and format (.pdf, .doc, .docx) per UI/UX guidelines
     const validExts = ['.pdf', '.doc', '.docx'];
     const hasValidExt = validExts.some((ext) => file.name.toLowerCase().endsWith(ext));
-    if (!hasValidExt) {
-      setFeedback({ type: 'error', message: 'Only PDF, DOC, or DOCX files are permitted.' });
+    if (file.size > 5 * 1024 * 1024 || !hasValidExt) {
+      setFeedback({
+        type: 'error',
+        message: 'Upload a PDF or DOC/DOCX resume within the allowed file size.'
+      });
+      setSelectedFile(null);
       return;
     }
 
@@ -215,11 +213,12 @@ export default function StudentProfile() {
 
           {/* Upload Input */}
           <div className="pt-2">
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+            <label htmlFor="resume-file-input" className="block text-xs font-semibold text-slate-700 mb-1.5">
               Upload New Resume (PDF, DOC, DOCX up to 5MB)
             </label>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <input
+                id="resume-file-input"
                 type="file"
                 accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={handleFileChange}

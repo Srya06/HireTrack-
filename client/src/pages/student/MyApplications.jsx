@@ -102,6 +102,14 @@ export default function MyApplications() {
             History
           </Button>
 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.assign(`/student/applications/${row._id}`)}
+          >
+            Details
+          </Button>
+
           {!['withdrawn', 'rejected', 'selected'].includes(row.status) && (
             <Button
               variant="ghost"
@@ -136,7 +144,7 @@ export default function MyApplications() {
         loading={loading}
         error={error}
         onRetry={fetchApplications}
-        emptyMessage="You have not submitted any applications yet."
+        emptyMessage="You haven't applied to any jobs yet. Explore current opportunities."
       />
 
       {!loading && applications.length > 0 && (
