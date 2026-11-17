@@ -14,3 +14,4 @@ router.get('/ping', protect, authorizeRoles(ROLES.ADMIN), (req, res) => {
 });
 
 export default router;
+

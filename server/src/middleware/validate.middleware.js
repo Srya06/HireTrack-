@@ -22,3 +22,4 @@ export const validate = (validations) => {
     return next(new ApiError(400, 'Validation failed', formattedErrors));
   };
 };
+

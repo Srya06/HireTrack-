@@ -11,3 +11,4 @@ export const authRateLimiter = rateLimit({
     next(ApiError.tooManyRequests('Too many login/registration attempts. Please try again after 15 minutes.'));
   }
 });
+

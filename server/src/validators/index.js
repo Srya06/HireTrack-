@@ -1,3 +1,2 @@
-// Placeholder for request validators
-export default {};
-
+export * from './auth.validator.js';
+export * from './student.validator.js';

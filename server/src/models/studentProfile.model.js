@@ -82,3 +82,4 @@ const studentProfileSchema = new mongoose.Schema(
 studentProfileSchema.index({ branch: 1, graduationYear: 1, cgpa: -1 });
 
 export const StudentProfile = mongoose.model('StudentProfile', studentProfileSchema);
+

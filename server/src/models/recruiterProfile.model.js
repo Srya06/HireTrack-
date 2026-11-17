@@ -76,3 +76,4 @@ const recruiterProfileSchema = new mongoose.Schema(
 recruiterProfileSchema.index({ approvalStatus: 1, createdAt: -1 });
 
 export const RecruiterProfile = mongoose.model('RecruiterProfile', recruiterProfileSchema);
+
