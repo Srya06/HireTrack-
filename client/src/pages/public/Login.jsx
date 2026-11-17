@@ -64,21 +64,28 @@ export default function Login() {
           <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
-              onClick={() => fillCredentials('admin@hiretrack.edu', 'Admin@HireTrack2026!')}
+              onClick={() => fillCredentials('admin@hiretrack.edu', 'Admin@123456')}
               className="text-xs bg-white text-indigo-700 px-2.5 py-1 rounded-md border border-indigo-200 hover:bg-indigo-50 font-medium"
             >
               Demo Admin
             </button>
             <button
               type="button"
-              onClick={() => fillCredentials('recruiter@google.com', 'Recruiter123!')}
+              onClick={() => fillCredentials('recruiter.approved@google.com', 'Recruiter@123456')}
               className="text-xs bg-white text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 hover:bg-slate-50 font-medium"
             >
               Demo Recruiter
             </button>
             <button
               type="button"
-              onClick={() => fillCredentials('student@hiretrack.edu', 'Student123!')}
+              onClick={() => fillCredentials('recruiter.pending@startup.io', 'Recruiter@123456')}
+              className="text-xs bg-white text-amber-700 px-2.5 py-1 rounded-md border border-amber-200 hover:bg-amber-50 font-medium"
+            >
+              Pending Recruiter
+            </button>
+            <button
+              type="button"
+              onClick={() => fillCredentials('maya.rao@hiretrack.edu', 'Student@123456')}
               className="text-xs bg-white text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 hover:bg-slate-50 font-medium"
             >
               Demo Student
