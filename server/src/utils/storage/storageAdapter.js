@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { env } from '../../config/env.js';
+import { RESUMES_UPLOAD_DIR } from '../demoPdfGenerator.js';
 
 // Initialize Cloudinary if credentials are provided
 if (env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET) {
@@ -58,7 +59,7 @@ export class CloudinaryStorage {
  * Local Disk Storage Implementation (for local development & offline testing)
  */
 export class LocalDevStorage {
-  constructor(uploadDir = path.resolve(process.cwd(), 'uploads/resumes')) {
+  constructor(uploadDir = RESUMES_UPLOAD_DIR) {
     this.uploadDir = uploadDir;
     if (!fs.existsSync(this.uploadDir)) {
       fs.mkdirSync(this.uploadDir, { recursive: true });
@@ -77,8 +78,10 @@ export class LocalDevStorage {
 
     await fs.promises.writeFile(filePath, fileBuffer);
 
+    const apiBase = process.env.API_PUBLIC_URL || `http://localhost:${env.PORT}`;
+
     return {
-      url: `/uploads/resumes/${storedFileName}`,
+      url: `${apiBase}/api/v1/uploads/resumes/${storedFileName}`,
       publicId: uniqueId,
       fileName: filename,
       mimeType: mimetype,

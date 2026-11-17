@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { connectDB, disconnectDB } from '../config/db.js';
+import { env } from '../config/env.js';
+import { ensureDemoResumeFile } from '../utils/demoPdfGenerator.js';
 import {
   User,
   StudentProfile,
@@ -120,8 +122,22 @@ export const seedDemo = async () => {
       console.log('  ✔ Created Student 1: maya.rao@hiretrack.edu / Student@123456');
     }
 
+    const apiBase = process.env.API_PUBLIC_URL || `http://localhost:${env.PORT}`;
+
     let stu1Profile = await StudentProfile.findOne({ userId: stu1User._id });
     if (!stu1Profile) {
+      const mayaPdf = ensureDemoResumeFile('Maya_Rao_Resume.pdf', {
+        name: 'Maya Rao',
+        studentId: '1RV22CS099',
+        branch: 'CSE',
+        graduationYear: 2026,
+        cgpa: 9.2,
+        email: 'maya.rao@hiretrack.edu',
+        phone: '+91 9888111222',
+        skills: ['React', 'Node.js', 'PostgreSQL', 'Distributed Systems'],
+        bio: 'Aspiring full-stack and systems developer with active open-source contributions.'
+      });
+
       stu1Profile = await StudentProfile.create({
         userId: stu1User._id,
         studentId: '1RV22CS099',
@@ -132,11 +148,11 @@ export const seedDemo = async () => {
         bio: 'Aspiring full-stack and systems developer with active open-source contributions.',
         phone: '+91 9888111222',
         resume: {
-          url: 'https://res.cloudinary.com/hiretrack/image/upload/v1/resumes/maya_rao_resume.pdf',
+          url: `${apiBase}/api/v1/uploads/resumes/Maya_Rao_Resume.pdf`,
           publicId: 'resumes/maya_rao_demo',
           fileName: 'Maya_Rao_Resume.pdf',
           mimeType: 'application/pdf',
-          size: 245000,
+          size: mayaPdf.size,
           uploadedAt: new Date()
         }
       });
@@ -158,6 +174,18 @@ export const seedDemo = async () => {
 
     let stu2Profile = await StudentProfile.findOne({ userId: stu2User._id });
     if (!stu2Profile) {
+      const rohanPdf = ensureDemoResumeFile('Rohan_Verma_Resume.pdf', {
+        name: 'Rohan Verma',
+        studentId: '1RV22IS045',
+        branch: 'ISE',
+        graduationYear: 2026,
+        cgpa: 8.5,
+        email: 'rohan.verma@hiretrack.edu',
+        phone: '+91 9888333444',
+        skills: ['Python', 'Docker', 'Kubernetes', 'FastAPI'],
+        bio: 'Cloud enthusiast focused on DevOps and backend infrastructure.'
+      });
+
       stu2Profile = await StudentProfile.create({
         userId: stu2User._id,
         studentId: '1RV22IS045',
@@ -168,11 +196,11 @@ export const seedDemo = async () => {
         bio: 'Cloud enthusiast focused on DevOps and backend infrastructure.',
         phone: '+91 9888333444',
         resume: {
-          url: 'https://res.cloudinary.com/hiretrack/image/upload/v1/resumes/rohan_verma_resume.pdf',
+          url: `${apiBase}/api/v1/uploads/resumes/Rohan_Verma_Resume.pdf`,
           publicId: 'resumes/rohan_verma_demo',
           fileName: 'Rohan_Verma_Resume.pdf',
           mimeType: 'application/pdf',
-          size: 210000,
+          size: rohanPdf.size,
           uploadedAt: new Date()
         }
       });

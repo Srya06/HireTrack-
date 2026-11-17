@@ -71,6 +71,9 @@ dist/
 build/
 .dist/
 
+# Local uploads
+uploads/
+
 # OS metadata
 .DS_Store
 Thumbs.db
