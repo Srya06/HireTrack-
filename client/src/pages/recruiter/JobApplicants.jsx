@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
+import { sanitizeUrl } from '../../utils/security.js';
 
 const STATUS_TRANSITION_MAP = {
   applied: [
@@ -215,9 +216,9 @@ export default function JobApplicants() {
         }
         return (
           <a
-            href={resumeUrl}
+            href={sanitizeUrl(resumeUrl)}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="inline-flex items-center space-x-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-1 rounded"
           >
             <FileText className="w-3.5 h-3.5" />

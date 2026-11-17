@@ -73,7 +73,10 @@ export default function NotificationBell() {
 
     if (notif.link) {
       setIsOpen(false);
-      navigate(notif.link);
+      const safeLink = String(notif.link).replace(/\\/g, '/');
+      if (safeLink.startsWith('/')) {
+        navigate(safeLink);
+      }
     }
   };
 

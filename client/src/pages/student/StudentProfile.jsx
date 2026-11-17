@@ -14,6 +14,7 @@ import {
   Loader2,
   Save
 } from 'lucide-react';
+import { sanitizeUrl } from '../../utils/security.js';
 
 const BRANCH_OPTIONS = [
   { value: 'CSE', label: 'Computer Science and Engineering (CSE)' },
@@ -193,9 +194,9 @@ export default function StudentProfile() {
               </div>
 
               <a
-                href={profile.resume.url}
+                href={sanitizeUrl(profile.resume.url)}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 transition-colors shadow-sm self-start sm:self-auto"
               >
                 <span>View Document</span>

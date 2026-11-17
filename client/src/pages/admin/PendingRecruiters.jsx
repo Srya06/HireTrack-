@@ -8,6 +8,7 @@ import ConfirmDialog from '../../components/ConfirmDialog.jsx';
 import FormField from '../../components/FormField.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import { Building2, CheckCircle, XCircle, ExternalLink, AlertCircle, Eye, Info } from 'lucide-react';
+import { sanitizeUrl } from '../../utils/security.js';
 
 export default function PendingRecruiters() {
   const [recruiters, setRecruiters] = useState([]);
@@ -101,9 +102,9 @@ export default function PendingRecruiters() {
           <div className="font-semibold text-slate-900">{row.companyName}</div>
           {row.website && (
             <a
-              href={row.website}
+              href={sanitizeUrl(row.website)}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="text-xs text-indigo-600 hover:underline inline-flex items-center gap-0.5"
             >
               <span>{row.website}</span>
@@ -216,9 +217,9 @@ export default function PendingRecruiters() {
               <span className="text-slate-500 block">Website:</span>
               {detailRecruiter?.website ? (
                 <a
-                  href={detailRecruiter.website}
+                  href={sanitizeUrl(detailRecruiter.website)}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="text-indigo-600 hover:underline inline-flex items-center gap-1 font-semibold"
                 >
                   {detailRecruiter.website} <ExternalLink className="w-3 h-3" />

@@ -90,6 +90,8 @@ export const updateStudentProfileById = async (requesterUser, targetId, updateDa
     if (!isOwnUser && !isOwnProfile) {
       throw ApiError.forbidden("Access denied: You cannot modify another student's profile");
     }
+  } else if (requesterUser.role !== ROLES.ADMIN) {
+    throw ApiError.forbidden('Access denied: Only the student or an administrator can modify this profile');
   }
 
   // Target may be profile ID or user ID

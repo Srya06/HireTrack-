@@ -24,3 +24,19 @@ export const env = Object.freeze({
   isTest: (process.env.NODE_ENV || 'development') === 'test'
 });
 
+// Production sanity guard: enforce non-trivial secrets
+if (env.isProduction) {
+  if (
+    !process.env.JWT_SECRET ||
+    process.env.JWT_SECRET.length < 32 ||
+    process.env.JWT_SECRET === 'hiretrack_jwt_super_secret_for_local_development_only'
+  ) {
+    throw new Error(
+      '[Security Error] Production environment requires a strong, random JWT_SECRET of at least 32 characters'
+    );
+  }
+  if (!process.env.MONGODB_URI) {
+    throw new Error('[Security Error] Production environment requires MONGODB_URI to be configured');
+  }
+}
+

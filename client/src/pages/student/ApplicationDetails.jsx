@@ -21,6 +21,7 @@ import {
   Loader2,
   Briefcase
 } from 'lucide-react';
+import { sanitizeUrl } from '../../utils/security.js';
 
 export default function ApplicationDetails() {
   const { applicationId } = useParams();
@@ -216,9 +217,9 @@ export default function ApplicationDetails() {
                       <span className="text-slate-400 block font-medium">Location / Meeting Link:</span>
                       {intw.mode === 'online' && intw.locationOrLink ? (
                         <a
-                          href={intw.locationOrLink}
+                          href={sanitizeUrl(intw.locationOrLink)}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="text-indigo-600 hover:underline font-semibold inline-flex items-center gap-1"
                         >
                           <Video className="w-3.5 h-3.5" />
@@ -264,9 +265,9 @@ export default function ApplicationDetails() {
             </div>
 
             <a
-              href={application.resumeSnapshot.url}
+              href={sanitizeUrl(application.resumeSnapshot.url)}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
             >
               <span>View Snapshot</span>
