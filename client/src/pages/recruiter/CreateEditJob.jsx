@@ -63,18 +63,18 @@ export default function CreateEditJob() {
         try {
           const res = await jobService.getJobById(jobId);
           if (res.success && res.data) {
-            const j = res.data.job;
+            const j = res.data.job || res.data;
             setTitle(j.title || '');
             setDepartment(j.department || '');
             setLocation(j.location || '');
             setEmploymentType(j.employmentType || 'full_time');
-            setSalaryRange(j.salaryRange || '');
+            setSalaryRange(j.ctc || j.salaryRange || '');
             if (j.applicationDeadline) {
               setDeadline(new Date(j.applicationDeadline).toISOString().split('T')[0]);
             }
-            setMinCgpa(String(j.eligibilityCriteria?.minCgpa ?? '0'));
-            setSelectedBranches(j.eligibilityCriteria?.allowedBranches || []);
-            setSelectedYears(j.eligibilityCriteria?.allowedGraduationYears || [2026]);
+            setMinCgpa(String(j.minCgpa ?? j.eligibilityCriteria?.minCgpa ?? '0'));
+            setSelectedBranches(j.eligibleBranches || j.eligibilityCriteria?.allowedBranches || []);
+            setSelectedYears(j.eligibleGraduationYears || j.eligibilityCriteria?.allowedGraduationYears || [2026]);
             setDescription(j.description || '');
             setRequirements(j.requirements || '');
           }
@@ -123,10 +123,14 @@ export default function CreateEditJob() {
     const payload = {
       title: title.trim(),
       department: department.trim(),
-      location: location.trim(),
+      location: location.trim() || 'Bengaluru',
       employmentType,
+      ctc: salaryRange.trim(),
       salaryRange: salaryRange.trim(),
       applicationDeadline: new Date(deadline).toISOString(),
+      minCgpa: parseFloat(minCgpa) || 0,
+      eligibleBranches: selectedBranches,
+      eligibleGraduationYears: selectedYears,
       eligibilityCriteria: {
         minCgpa: parseFloat(minCgpa) || 0,
         allowedBranches: selectedBranches,
@@ -143,7 +147,7 @@ export default function CreateEditJob() {
         await jobService.updateJob(jobId, payload);
       } else {
         const res = await jobService.createJob(payload);
-        savedJobId = res.data?.job?._id || res.data?._id;
+        savedJobId = res.data?.job?.id || res.data?.job?._id || res.data?.id || res.data?._id;
       }
 
       if (publishImmediately && savedJobId) {

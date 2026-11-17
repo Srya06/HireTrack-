@@ -34,10 +34,14 @@ export default function JobModeration() {
         ...(statusFilter && { status: statusFilter })
       };
       const response = await adminService.getAdminJobs(params);
-      if (response.success && response.data) {
-        setJobs(response.data.jobs || []);
-        setTotal(response.data.pagination?.total || 0);
-        setTotalPages(response.data.pagination?.totalPages || 1);
+      if (response.success) {
+        const jobList = Array.isArray(response.data)
+          ? response.data
+          : response.data?.jobs || [];
+        const pag = response.pagination || response.data?.pagination || {};
+        setJobs(jobList);
+        setTotal(pag.total || jobList.length);
+        setTotalPages(pag.totalPages || 1);
       }
     } catch (err) {
       setError(err.message || 'Failed to load jobs');
@@ -59,7 +63,7 @@ export default function JobModeration() {
     if (!actionJob || !targetStatus) return;
     setActionLoading(true);
     try {
-      await adminService.updateAdminJobStatus(actionJob._id, {
+      await adminService.updateAdminJobStatus(actionJob.id || actionJob._id, {
         status: targetStatus,
         reason: `Administrator changed status to ${targetStatus}`
       });

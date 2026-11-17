@@ -69,16 +69,24 @@ export default function JobsBrowse() {
         applicationService.getMyApplications({ limit: 100 })
       ]);
 
-      if (jobsRes.status === 'fulfilled' && jobsRes.value.data) {
-        setJobs(jobsRes.value.data.jobs || []);
-        setTotal(jobsRes.value.data.pagination?.total || 0);
-        setTotalPages(jobsRes.value.data.pagination?.totalPages || 1);
+      if (jobsRes.status === 'fulfilled' && jobsRes.value) {
+        const resBody = jobsRes.value;
+        const jobList = Array.isArray(resBody.data)
+          ? resBody.data
+          : resBody.data?.jobs || [];
+        const pag = resBody.pagination || resBody.data?.pagination || {};
+        setJobs(jobList);
+        setTotal(pag.total || jobList.length);
+        setTotalPages(pag.totalPages || 1);
       } else if (jobsRes.status === 'rejected') {
         throw new Error(jobsRes.reason?.message || 'Failed to load jobs');
       }
 
-      if (appsRes.status === 'fulfilled' && appsRes.value.data) {
-        const ids = new Set((appsRes.value.data.applications || []).map((a) => a.jobId?._id || a.jobId));
+      if (appsRes.status === 'fulfilled' && appsRes.value) {
+        const appList = Array.isArray(appsRes.value.data)
+          ? appsRes.value.data
+          : appsRes.value.data?.applications || [];
+        const ids = new Set(appList.map((a) => a.jobId?.id || a.jobId?._id || a.jobId));
         setAppliedJobIds(ids);
       }
     } catch (err) {
@@ -185,15 +193,18 @@ export default function JobsBrowse() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {jobs.map((job) => (
-            <JobCard
-              key={job._id}
-              job={job}
-              applied={appliedJobIds.has(job._id)}
-              onViewDetails={(j) => navigate(`/student/jobs/${j._id}`)}
-              onApply={(j) => navigate(`/student/jobs/${j._id}`)}
-            />
-          ))}
+          {jobs.map((job) => {
+            const jobId = job.id || job._id;
+            return (
+              <JobCard
+                key={jobId}
+                job={job}
+                applied={appliedJobIds.has(jobId)}
+                onViewDetails={(j) => navigate(`/student/jobs/${j.id || j._id}`)}
+                onApply={(j) => navigate(`/student/jobs/${j.id || j._id}`)}
+              />
+            );
+          })}
         </div>
       )}
 

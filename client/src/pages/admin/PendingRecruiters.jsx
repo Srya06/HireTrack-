@@ -34,10 +34,14 @@ export default function PendingRecruiters() {
     setError(null);
     try {
       const response = await adminService.getPendingRecruiters({ page, limit: 10 });
-      if (response.success && response.data) {
-        setRecruiters(response.data.recruiters || []);
-        setTotal(response.data.pagination?.total || 0);
-        setTotalPages(response.data.pagination?.totalPages || 1);
+      if (response.success) {
+        const recList = Array.isArray(response.data)
+          ? response.data
+          : response.data?.recruiters || [];
+        const pag = response.pagination || response.data?.pagination || {};
+        setRecruiters(recList);
+        setTotal(pag.total || recList.length);
+        setTotalPages(pag.totalPages || 1);
       }
     } catch (err) {
       setError(err.message || 'Failed to load pending recruiters');
@@ -54,7 +58,7 @@ export default function PendingRecruiters() {
     if (!approveRecruiter) return;
     setActionLoading(true);
     try {
-      await adminService.updateRecruiterApproval(approveRecruiter._id, {
+      await adminService.updateRecruiterApproval(approveRecruiter.id || approveRecruiter._id, {
         approvalStatus: 'approved'
       });
       setApproveRecruiter(null);
@@ -80,7 +84,7 @@ export default function PendingRecruiters() {
     setActionLoading(true);
     setActionError('');
     try {
-      await adminService.updateRecruiterApproval(actionRecruiter._id, {
+      await adminService.updateRecruiterApproval(actionRecruiter.id || actionRecruiter._id, {
         approvalStatus: 'rejected',
         rejectionReason: rejectionReason.trim()
       });

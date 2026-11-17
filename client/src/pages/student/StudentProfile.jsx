@@ -50,7 +50,7 @@ export default function StudentProfile() {
     try {
       const response = await studentService.getMyProfile();
       if (response.success && response.data) {
-        const p = response.data;
+        const p = response.data.profile || response.data;
         setProfile(p);
         setPhone(p.phone || '');
         setBio(p.bio || '');
@@ -87,7 +87,7 @@ export default function StudentProfile() {
 
       const response = await studentService.updateMyProfile(payload);
       if (response.success) {
-        setProfile(response.data);
+        setProfile(response.data.profile || response.data);
         setFeedback({ type: 'success', message: 'Profile updated successfully!' });
       }
     } catch (err) {

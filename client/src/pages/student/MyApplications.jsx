@@ -33,10 +33,14 @@ export default function MyApplications() {
     setError(null);
     try {
       const response = await applicationService.getMyApplications({ page, limit: 10 });
-      if (response.success && response.data) {
-        setApplications(response.data.applications || []);
-        setTotal(response.data.pagination?.total || 0);
-        setTotalPages(response.data.pagination?.totalPages || 1);
+      if (response.success) {
+        const appList = Array.isArray(response.data)
+          ? response.data
+          : response.data?.applications || [];
+        const pag = response.pagination || response.data?.pagination || {};
+        setApplications(appList);
+        setTotal(pag.total || appList.length);
+        setTotalPages(pag.totalPages || 1);
       }
     } catch (err) {
       setError(err.message || 'Failed to load your applications');
@@ -53,7 +57,7 @@ export default function MyApplications() {
     if (!appToWithdraw) return;
     setWithdrawing(true);
     try {
-      await applicationService.withdrawApplication(appToWithdraw._id);
+      await applicationService.withdrawApplication(appToWithdraw.id || appToWithdraw._id);
       setIsWithdrawOpen(false);
       setAppToWithdraw(null);
       fetchApplications();
@@ -105,7 +109,7 @@ export default function MyApplications() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.location.assign(`/student/applications/${row._id}`)}
+            onClick={() => window.location.assign(`/student/applications/${row.id || row._id}`)}
           >
             Details
           </Button>

@@ -36,15 +36,22 @@ export default function StudentDashboard() {
         jobService.getJobs({ limit: 6 })
       ]);
 
-      if (profRes.status === 'fulfilled' && profRes.value.data) {
-        setProfile(profRes.value.data);
+      if (profRes.status === 'fulfilled' && profRes.value?.data) {
+        setProfile(profRes.value.data.profile || profRes.value.data);
       }
-      if (appsRes.status === 'fulfilled' && appsRes.value.data) {
-        setApplications(appsRes.value.data.applications || []);
+      if (appsRes.status === 'fulfilled' && appsRes.value) {
+        const appList = Array.isArray(appsRes.value.data)
+          ? appsRes.value.data
+          : appsRes.value.data?.applications || [];
+        setApplications(appList);
       }
-      if (jobsRes.status === 'fulfilled' && jobsRes.value.data) {
-        setActiveJobs(jobsRes.value.data.jobs || []);
-        setTotalJobsCount(jobsRes.value.data.pagination?.total || (jobsRes.value.data.jobs || []).length);
+      if (jobsRes.status === 'fulfilled' && jobsRes.value) {
+        const jobList = Array.isArray(jobsRes.value.data)
+          ? jobsRes.value.data
+          : jobsRes.value.data?.jobs || [];
+        const pag = jobsRes.value.pagination || jobsRes.value.data?.pagination || {};
+        setActiveJobs(jobList);
+        setTotalJobsCount(pag.total || jobList.length);
       }
     } catch (err) {
       setError(err.message || 'Failed to load dashboard data');
@@ -221,22 +228,25 @@ export default function StudentDashboard() {
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
-              {applications.slice(0, 4).map((app) => (
-                <div key={app._id} className="py-3 flex items-center justify-between">
+              {applications.slice(0, 4).map((app) => {
+                const appId = app.id || app._id;
+                return (
+                <div key={appId} className="py-3 flex items-center justify-between">
                   <div>
                     <h4 className="text-sm font-semibold text-slate-900">{app.jobId?.title || 'Job Opening'}</h4>
                     <p className="text-xs text-slate-500">{app.jobId?.companyName || 'Company'}</p>
                   </div>
                   <div className="flex items-center space-x-3">
                     <StatusBadge status={app.status} size="sm" />
-                    <Link to={`/student/applications/${app._id}`}>
+                    <Link to={`/student/applications/${appId}`}>
                       <Button variant="ghost" size="sm">
                         View
                       </Button>
                     </Link>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>
@@ -260,21 +270,24 @@ export default function StudentDashboard() {
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
-              {activeJobs.map((job) => (
-                <div key={job._id} className="py-3 flex items-center justify-between">
+              {activeJobs.map((job) => {
+                const jobId = job.id || job._id;
+                return (
+                <div key={jobId} className="py-3 flex items-center justify-between">
                   <div>
                     <h4 className="text-sm font-semibold text-slate-900">{job.title}</h4>
                     <p className="text-xs text-slate-500">
                       {job.companyName} • {job.location || 'Bengaluru'}
                     </p>
                   </div>
-                  <Link to={`/student/jobs/${job._id}`}>
+                  <Link to={`/student/jobs/${jobId}`}>
                     <Button variant="outline" size="sm">
                       Details
                     </Button>
                   </Link>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>

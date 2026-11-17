@@ -38,10 +38,14 @@ export default function UserManagement() {
         ...(roleFilter && { role: roleFilter })
       };
       const response = await adminService.getUsers(params);
-      if (response.success && response.data) {
-        setUsers(response.data.users || []);
-        setTotal(response.data.pagination?.total || 0);
-        setTotalPages(response.data.pagination?.totalPages || 1);
+      if (response.success) {
+        const userList = Array.isArray(response.data)
+          ? response.data
+          : response.data?.users || [];
+        const pag = response.pagination || response.data?.pagination || {};
+        setUsers(userList);
+        setTotal(pag.total || userList.length);
+        setTotalPages(pag.totalPages || 1);
       }
     } catch (err) {
       setError(err.message || 'Failed to load user directory');
@@ -70,7 +74,7 @@ export default function UserManagement() {
 
     setActionLoading(true);
     try {
-      await adminService.updateUserStatus(targetUser._id, {
+      await adminService.updateUserStatus(targetUser.id || targetUser._id, {
         accountStatus: newStatus,
         reason: `Administrative ${newStatus} applied by ${currentAdmin?.email}`
       });
@@ -121,7 +125,8 @@ export default function UserManagement() {
       header: 'Actions',
       className: 'text-right',
       accessor: (row) => {
-        const isSelf = row._id === currentAdmin?._id || row._id === currentAdmin?.id;
+        const rowId = row.id || row._id;
+        const isSelf = rowId === currentAdmin?.id || rowId === currentAdmin?._id;
         const isAdmin = row.role === 'admin';
 
         // Cannot suspend self or other admins

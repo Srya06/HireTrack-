@@ -51,24 +51,27 @@ export default function JobDetails() {
           applicationService.getMyApplications({ limit: 100 })
         ]);
 
-        if (jobRes.status === 'fulfilled' && jobRes.value.data) {
-          setJob(jobRes.value.data.job);
-          setEligibility(jobRes.value.data.eligibility);
+        if (jobRes.status === 'fulfilled' && jobRes.value?.data) {
+          setJob(jobRes.value.data.job || jobRes.value.data);
+          setEligibility(jobRes.value.data.eligibility || null);
         } else {
           throw new Error('Failed to load job details');
         }
 
-        if (profRes.status === 'fulfilled' && profRes.value.data) {
-          setStudentProfile(profRes.value.data);
+        if (profRes.status === 'fulfilled' && profRes.value?.data) {
+          setStudentProfile(profRes.value.data.profile || profRes.value.data);
         }
 
-        if (myAppsRes.status === 'fulfilled' && myAppsRes.value.data) {
-          const found = (myAppsRes.value.data.applications || []).find(
-            (a) => (a.jobId?._id || a.jobId) === jobId
+        if (myAppsRes.status === 'fulfilled' && myAppsRes.value) {
+          const appList = Array.isArray(myAppsRes.value.data)
+            ? myAppsRes.value.data
+            : myAppsRes.value.data?.applications || [];
+          const found = appList.find(
+            (a) => (a.jobId?.id || a.jobId?._id || a.jobId) === jobId
           );
           if (found) {
             setHasApplied(true);
-            setApplicationId(found._id);
+            setApplicationId(found.id || found._id);
           }
         }
       } catch (err) {

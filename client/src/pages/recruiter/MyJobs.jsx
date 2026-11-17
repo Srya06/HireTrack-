@@ -36,10 +36,15 @@ export default function MyJobs() {
         recruiterService.getMyProfile()
       ]);
 
-      if (jobsRes.status === 'fulfilled' && jobsRes.value.data) {
-        setJobs(jobsRes.value.data.jobs || []);
-        setTotal(jobsRes.value.data.pagination?.total || 0);
-        setTotalPages(jobsRes.value.data.pagination?.totalPages || 1);
+      if (jobsRes.status === 'fulfilled' && jobsRes.value) {
+        const resBody = jobsRes.value;
+        const jobList = Array.isArray(resBody.data)
+          ? resBody.data
+          : resBody.data?.jobs || [];
+        const pag = resBody.pagination || resBody.data?.pagination || {};
+        setJobs(jobList);
+        setTotal(pag.total || jobList.length);
+        setTotalPages(pag.totalPages || 1);
       } else if (jobsRes.status === 'rejected') {
         throw new Error(jobsRes.reason?.message || 'Failed to load your jobs');
       }
@@ -65,10 +70,11 @@ export default function MyJobs() {
     if (!actionJob || !actionType) return;
     setActionLoading(true);
     try {
+      const targetJobId = actionJob.id || actionJob._id;
       if (actionType === 'publish') {
-        await jobService.publishJob(actionJob._id);
+        await jobService.publishJob(targetJobId);
       } else if (actionType === 'close') {
-        await jobService.closeJob(actionJob._id);
+        await jobService.closeJob(targetJobId);
       }
       setActionJob(null);
       setActionType('');
@@ -117,7 +123,7 @@ export default function MyJobs() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(`/recruiter/jobs/${row._id}/applicants`)}
+            onClick={() => navigate(`/recruiter/jobs/${row.id || row._id}/applicants`)}
             icon={Users}
           >
             Applicants
@@ -157,7 +163,7 @@ export default function MyJobs() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(`/recruiter/jobs/${row._id}/edit`)}
+            onClick={() => navigate(`/recruiter/jobs/${row.id || row._id}/edit`)}
             icon={Edit}
           >
             Edit
@@ -202,7 +208,7 @@ export default function MyJobs() {
         data={jobs}
         loading={loading}
         error={error}
-        onRetry={fetchJobs}
+        onRetry={fetchJobsAndProfile}
         emptyMessage="You haven't posted any jobs yet."
       />
 

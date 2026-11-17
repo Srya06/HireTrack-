@@ -38,20 +38,27 @@ export default function RecruiterDashboard() {
           setProfile(profRes.value.data);
         }
 
-        if (jobsRes.status === 'fulfilled' && jobsRes.value.data) {
-          const fetchedJobs = jobsRes.value.data.jobs || [];
+        if (jobsRes.status === 'fulfilled' && jobsRes.value) {
+          const fetchedJobs = Array.isArray(jobsRes.value.data)
+            ? jobsRes.value.data
+            : jobsRes.value.data?.jobs || [];
           setJobs(fetchedJobs);
 
           // Calculate awaiting review & scheduled interviews across jobs
           if (fetchedJobs.length > 0) {
             const appsResults = await Promise.allSettled(
-              fetchedJobs.slice(0, 10).map((j) => applicationService.getJobApplications(j._id, { limit: 100 }))
+              fetchedJobs.slice(0, 10).map((j) =>
+                applicationService.getJobApplications(j.id || j._id, { limit: 100 })
+              )
             );
             let awaiting = 0;
             let interviews = 0;
             for (const res of appsResults) {
-              if (res.status === 'fulfilled' && res.value?.data?.applications) {
-                for (const app of res.value.data.applications) {
+              if (res.status === 'fulfilled' && res.value) {
+                const appsList = Array.isArray(res.value.data)
+                  ? res.value.data
+                  : res.value.data?.applications || res.value.data?.applicants || [];
+                for (const app of appsList) {
                   if (['applied', 'under_review'].includes(app.status)) awaiting++;
                   if (app.status === 'interview_scheduled') interviews++;
                 }
@@ -189,8 +196,10 @@ export default function RecruiterDashboard() {
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
-            {jobs.slice(0, 5).map((j) => (
-              <div key={j._id} className="py-3 flex items-center justify-between">
+            {jobs.slice(0, 5).map((j) => {
+              const jobId = j.id || j._id;
+              return (
+              <div key={jobId} className="py-3 flex items-center justify-between">
                 <div>
                   <h4 className="text-sm font-semibold text-slate-900">{j.title}</h4>
                   <p className="text-xs text-slate-500">
@@ -199,14 +208,15 @@ export default function RecruiterDashboard() {
                 </div>
                 <div className="flex items-center space-x-3">
                   <StatusBadge status={j.status} size="sm" />
-                  <Link to={`/recruiter/jobs/${j._id}/applicants`}>
+                  <Link to={`/recruiter/jobs/${jobId}/applicants`}>
                     <Button variant="outline" size="sm">
                       View Applicants
                     </Button>
                   </Link>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </Card>

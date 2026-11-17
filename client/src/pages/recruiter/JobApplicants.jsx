@@ -87,13 +87,18 @@ export default function JobApplicants() {
         applicationService.getJobApplications(jobId, { page, limit: 10 })
       ]);
 
-      if (jobRes.status === 'fulfilled' && jobRes.value.data) {
-        setJob(jobRes.value.data.job);
+      if (jobRes.status === 'fulfilled' && jobRes.value?.data) {
+        setJob(jobRes.value.data.job || jobRes.value.data);
       }
-      if (appsRes.status === 'fulfilled' && appsRes.value.data) {
-        setApplications(appsRes.value.data.applications || []);
-        setTotal(appsRes.value.data.pagination?.total || 0);
-        setTotalPages(appsRes.value.data.pagination?.totalPages || 1);
+      if (appsRes.status === 'fulfilled' && appsRes.value) {
+        const resBody = appsRes.value;
+        const appList = Array.isArray(resBody.data)
+          ? resBody.data
+          : resBody.data?.applications || resBody.data?.applicants || [];
+        const pag = resBody.pagination || resBody.data?.pagination || {};
+        setApplications(appList);
+        setTotal(pag.total || appList.length);
+        setTotalPages(pag.totalPages || 1);
       }
     } catch (err) {
       setError(err.message || 'Failed to fetch applicants');
@@ -138,9 +143,10 @@ export default function JobApplicants() {
     e.preventDefault();
     if (!statusModalApp || !nextStatus) return;
 
+    const targetAppId = statusModalApp.id || statusModalApp._id;
     if (['rejected', 'selected'].includes(nextStatus)) {
       setConsequentialDialogData({
-        appId: statusModalApp._id,
+        appId: targetAppId,
         candidateName: statusModalApp.studentId?.name || 'Candidate',
         nextStatus,
         note: statusNote.trim()
@@ -148,7 +154,7 @@ export default function JobApplicants() {
       return;
     }
 
-    await executeStatusUpdate(statusModalApp._id, nextStatus, statusNote.trim());
+    await executeStatusUpdate(targetAppId, nextStatus, statusNote.trim());
   };
 
   // Open Interview Modal
@@ -173,7 +179,7 @@ export default function JobApplicants() {
     setInterviewScheduling(true);
     setInterviewError('');
     try {
-      await interviewService.scheduleInterview(interviewModalApp._id, {
+      await interviewService.scheduleInterview(interviewModalApp.id || interviewModalApp._id, {
         scheduledAt: new Date(scheduledAt).toISOString(),
         mode: interviewMode,
         locationOrLink: interviewLocation.trim(),
