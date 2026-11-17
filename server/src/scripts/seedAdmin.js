@@ -6,7 +6,12 @@ import { env } from '../config/env.js';
 
 const seedAdmin = async () => {
   try {
-    await connectDB();
+    const conn = await connectDB();
+    if (!conn) {
+      throw new Error(
+        'Database connection failed. Please ensure your MONGODB_URI in server/.env is valid and your current IP address is whitelisted in your MongoDB Atlas cluster.'
+      );
+    }
 
     const adminEmail = (process.env.ADMIN_EMAIL || 'admin@hiretrack.edu').toLowerCase().trim();
     const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@HireTrack2026!';

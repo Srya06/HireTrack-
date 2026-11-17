@@ -1,142 +1,253 @@
 # HireTrack — Single-College Placement Management System (MVP)
 
-HireTrack is an end-to-end placement management platform built for single-college campus hiring operations. It coordinates the core workflow across three distinct roles:
-1. **Placement Cell Administration (`admin`)** — Moderates recruiters, tracks live placement metrics, and manages user accounts.
-2. **Corporate Recruiters (`recruiter`)** — Registers company profile, posts campus drives, screens applicants, downloads resumes, and schedules interview rounds.
-3. **Graduating Students (`student`)** — Builds verified profile, uploads resumes, discovers eligible opportunities with real-time rule checks, and tracks application stages.
+HireTrack is an end-to-end, role-based placement management platform designed for single-college campus hiring operations. It unifies the campus recruitment lifecycle across three core stakeholders:
+
+1. **Placement Cell Administration (`admin`)** — Oversees corporate partner approval, monitors live institutional placement analytics, moderates recruitment drives, and governs user accounts.
+2. **Corporate Recruiters (`recruiter`)** — Submits company profile for verification, configures job drives with eligibility criteria, evaluates applicants, downloads candidate resumes, advances application states, and schedules interview rounds.
+3. **Graduating Students (`student`)** — Maintains academic profile, uploads resumes, discovers eligible opportunities with real-time rule checks, applies to campus drives, and tracks application timelines with scheduled interview invites.
 
 ---
 
-## 🛠 Technology Stack
+## 🛠 Technology Stack (Fixed Specification)
 
-- **Backend:** Node.js LTS, Express.js (ES Modules), Mongoose ODM, MongoDB (Atlas / in-memory test fallback).
+- **Backend:** Node.js LTS, Express.js (Native ES Modules), Mongoose ODM, MongoDB (Atlas cluster with automated deterministic in-memory fallback for testing).
 - **Frontend:** React 18, Vite, Tailwind CSS, React Router v6, Axios, Lucide React, Recharts.
-- **Security:** JWT authentication, bcryptjs password hashing, Helmet, CORS whitelisting, rate limiting on `/auth`, role-based access control (RBAC), and strict field allowlisting.
-- **Testing:** Jest + Supertest (server suite, 85 tests) & Vitest + React Testing Library (client suite, 6 tests).
+- **Security & RBAC:** Verified JWT authentication, bcryptjs password hashing (10–12 salt rounds), Helmet security headers, CORS origin whitelisting, rate limiting on `/auth` (20 req / 15 min), role and resource ownership verification server-side, strict field allowlisting on all mutations, and no secret leakage in logs.
+- **Testing:** Jest + Supertest (Server test suite — 85 tests) & Vitest + React Testing Library (Client test suite — 34 tests) + End-to-End Demo Script (8 passing steps).
 
 ---
 
-## 🚀 Quick Start Guide
+## 📋 Prerequisites
 
-### Prerequisites
-- Node.js LTS (v18 or higher)
-- npm
-
-### 1. Environment Configuration
-
-The repository includes pre-configured environment templates:
-
-- **Server configuration** (`server/.env`):
-  ```env
-  NODE_ENV=development
-  PORT=5000
-  MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.fhe4q4q.mongodb.net/hiretrack?retryWrites=true&w=majority
-  CLIENT_URL=http://localhost:5173
-  JWT_SECRET=your_jwt_secret_key_2026
-  JWT_EXPIRES_IN=1d
-  MAX_RESUME_SIZE_MB=5
-  ```
-
-- **Client configuration** (`client/.env`):
-  ```env
-  VITE_API_BASE_URL=http://localhost:5000/api/v1
-  ```
-
-*(Note: Sensitive credentials are kept exclusively in `.env` and excluded from git version control).*
+- **Node.js:** LTS version `v18.x` or `v20.x` or higher
+- **npm:** `v9.x` or `v10.x` or higher
+- **MongoDB:** MongoDB Atlas cluster or local MongoDB instance (automated in-memory MongoDB is built-in for testing)
 
 ---
 
-### 2. Starting the Application
+## ⚙️ Environment Variables
 
-#### Terminal 1 — Start the Express API Backend
+### Server Configuration (`server/.env`)
+
+Create `server/.env` (see template in `server/.env.example`):
+
+| Variable | Description | Default / Example |
+| :--- | :--- | :--- |
+| `NODE_ENV` | Application environment (`development`, `production`, `test`) | `development` |
+| `PORT` | Express backend listening port | `5000` |
+| `MONGODB_URI` | MongoDB connection URI (Atlas or local) | `mongodb+srv://<user>:<password>@cluster0.mongodb.net/hiretrack` |
+| `CLIENT_URL` | Allowed CORS origin for frontend | `http://localhost:5173` |
+| `JWT_SECRET` | Secret key used for signing JWT tokens (min 32 characters) | `hiretrack_jwt_super_secret_for_local_development_only` |
+| `JWT_EXPIRES_IN`| Token lifespan | `1d` |
+| `MAX_RESUME_SIZE_MB` | Maximum allowed file upload size in MB | `5` |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud identifier (optional; defaults to local storage if omitted) | `your_cloud_name` |
+| `CLOUDINARY_API_KEY` | Cloudinary API Key | `your_api_key` |
+| `CLOUDINARY_API_SECRET` | Cloudinary API Secret | `your_api_secret` |
+
+### Client Configuration (`client/.env`)
+
+Create `client/.env` (see template in `client/.env.example`):
+
+| Variable | Description | Default / Example |
+| :--- | :--- | :--- |
+| `VITE_API_BASE_URL` | Base URL of the backend Express API | `http://localhost:5000/api/v1` |
+
+---
+
+## 🚀 Local Installation & Startup
+
+### 1. Clone & Install Dependencies
+
 ```bash
+# Clone the repository
+git clone https://github.com/your-org/hiretrack.git
+cd hiretrack
+
+# Install backend dependencies
 cd server
-npm run dev
-# Server starts at http://localhost:5000
+npm install
+
+# Install frontend dependencies
+cd ../client
+npm install
+cd ..
 ```
 
-#### Terminal 2 — Start the React Vite Frontend
+### 2. Configure Environment Files
+
 ```bash
-cd client
-npm run dev
-# Client runs at http://localhost:5173
+# From workspace root:
+cp server/.env.example server/.env
+cp client/.env.example client/.env
 ```
 
----
+### 3. Seed Database & Start Applications
 
-## 🔑 Default Roles & Demo Accounts
-
-For immediate local exploration, you can use the one-click demo fill buttons on the Login page (`/login`) or the seeded credentials:
-
-| Role | Email | Password | Permissions & Notes |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@hiretrack.edu` | `Admin@HireTrack2026!` | Full moderation, pending recruiter approval, metrics |
-| **Recruiter** | `recruiter@google.com` | `Recruiter123!` | Job posting (requires approval), applicant management |
-| **Student** | `student@hiretrack.edu` | `Student123!` | Profile & resume management, apply to jobs |
-
-To re-seed the administrator account:
 ```bash
-cd server
+# Seed initial administrator account
 npm run seed:admin
+
+# Or seed the full demo dataset (admin, approved recruiter, pending recruiter, 3 students, 2 jobs, interview)
+npm run seed:demo
+
+# Start Backend API (Terminal 1)
+npm run dev:server
+# API running at: http://localhost:5000 (Health ping: http://localhost:5000/api/v1/health)
+
+# Start Frontend UI (Terminal 2)
+npm run dev:client
+# Web App running at: http://localhost:5173
 ```
 
 ---
 
-## 🧪 Running Automated Tests
+## 📜 Monorepo Scripts Reference
 
-HireTrack has complete automated test coverage across unit services, API routes, security boundaries, and React components.
+All primary commands can be executed directly from the root workspace:
 
-### Server Test Suite (Jest + Supertest — 85 Passing Tests)
-```bash
-cd server
-npm test
-```
-Tests include:
-- `tests/unit_services.test.js` — Pure eligibility engine and status transition validation.
-- `tests/health.test.js` — Server uptime and database connectivity.
-- `tests/auth.test.js` — Registration, login, JWT protection, password hashing, and role security.
-- `tests/student.test.js` — Profile CRUD, resume upload, and completeness calculation.
-- `tests/recruiter_jobs.test.js` — Pending recruiter blocking, job CRUD, and ownership boundaries.
-- `tests/applications.test.js` — Application flow, duplicate prevention, and candidate status updates.
-- `tests/interviews_admin.test.js` — Interview scheduling, admin moderation, and audit logs.
-
-### Client Test Suite (Vitest + React Testing Library — 6 Passing Tests)
-```bash
-cd client
-npm test
-```
-Tests include:
-- `src/__tests__/smoke.test.jsx` — Smoke test verifying health connection, branding, and role portals.
-- `src/__tests__/components.test.jsx` — Reusable components (Button, StatusBadge, JobCard, ApplicationTimeline).
+| Command | Action |
+| :--- | :--- |
+| `npm run dev:server` | Starts the Express server with nodemon auto-restart |
+| `npm run dev:client` | Starts the Vite React frontend development server |
+| `npm run build:client`| Compiles optimized production frontend bundle to `client/dist/` |
+| `npm run test` | Executes both backend Jest suite and frontend Vitest suite |
+| `npm run test:server` | Runs all 7 backend Jest test suites (85 tests) |
+| `npm run test:client` | Runs all 6 frontend Vitest test suites (34 tests) |
+| `npm run seed:admin` | Seeds default administrative user account |
+| `npm run seed:demo` | Seeds full demo ecosystem (3 roles, jobs, applications, interviews) |
+| `npm run verify:demo` | Executes programmatic 8-step demo script with step-by-step assertions |
 
 ---
 
-## 🔄 Core Demo Workflow
+## 🔑 Demo Accounts & Pre-Seeded Credentials
 
-1. **Admin Approves Recruiter:**
-   - Sign in as Admin (`admin@hiretrack.edu`).
-   - Navigate to **Pending Recruiters** (`/admin/recruiters`).
-   - Click **Approve** on a pending corporate partner registration.
+The login screen (`/login`) includes 1-click autofill pills for instant access:
 
-2. **Recruiter Publishes Job Drive:**
-   - Sign in as Recruiter.
-   - Navigate to **Post New Job** (`/recruiter/jobs/new`).
-   - Enter job details, set minimum CGPA and eligible branches (e.g. CSE, ISE).
-   - Click **Publish Campus Drive**.
+| Role | Email | Password | Status & Capabilities |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@hiretrack.edu` | `Admin@123456` | Full governance, recruiter approvals, persisted metrics |
+| **Recruiter (Approved)** | `recruiter.approved@google.com` | `Recruiter@123456` | Verified Google Cloud recruiter; can post & publish drives |
+| **Recruiter (Pending)** | `recruiter.pending@startup.io` | `Recruiter@123456` | Awaiting placement approval (UC-04 test account) |
+| **Student 1** | `maya.rao@hiretrack.edu` | `Student@123456` | CSE (9.2 CGPA), resume uploaded, interview scheduled |
+| **Student 2** | `rohan.verma@hiretrack.edu` | `Student@123456` | ISE (8.5 CGPA), resume uploaded |
+| **Student 3** | `ananya.sen@hiretrack.edu` | `Student@123456` | ECE (7.2 CGPA), profile edge cases & eligibility testing |
 
-3. **Student Applies:**
-   - Sign in as Student.
-   - Check **Profile & Resume** (`/student/profile`) to ensure resume is uploaded.
-   - Navigate to **Browse Jobs** (`/student/jobs`), click on the published drive.
-   - Observe real-time eligibility evaluation and click **Apply for this Position**.
+---
 
-4. **Recruiter Progresses Candidate:**
-   - Recruiter navigates to **My Jobs** $\to$ **Applicants** (`/recruiter/jobs/:id/applicants`).
-   - View candidate qualification and attached resume.
-   - Click **Update Status** to advance candidate to `shortlisted`.
-   - Click **Interview** to schedule a technical round (moves status to `interview_scheduled`).
+## 🧪 Comprehensive Automated Test Suites
 
-5. **Student & Admin Real-Time Verification:**
-   - Student navigates to **My Applications** $\to$ **History** to view the chronological timeline and interview invite details.
-   - Admin navigates to **Dashboard Overview** (`/admin/dashboard`) to view live counts and updated placement statistics.
+HireTrack enforces 100% passing test coverage across 119 automated tests:
 
+### Server Suite (`npm run test:server` — 85 Passed)
+- `tests/unit_services.test.js` (17 tests) — Pure eligibility engine logic and status transition matrix.
+- `tests/health.test.js` (2 tests) — Database status and 404 handler integrity.
+- `tests/auth.test.js` (17 tests) — Registration, login, password hash exclusion, and RBAC guards.
+- `tests/student.test.js` (12 tests) — Profile allowlisting, resume validation, and completeness tracking.
+- `tests/recruiter_jobs.test.js` (11 tests) — Pending recruiter blocking, job CRUD, and resource ownership.
+- `tests/applications.test.js` (15 tests) — Application creation, concurrent double-apply prevention, and recruiter updates.
+- `tests/interviews_admin.test.js` (11 tests) — Interview scheduling, admin metrics aggregation, and audit logs.
+
+### Client Suite (`npm run test:client` — 34 Passed)
+- `src/__tests__/smoke.test.jsx` (2 tests) — App branding and portal smoke tests.
+- `src/__tests__/components.test.jsx` (4 tests) — Reusable UI primitives (Button, Card, StatusBadge, Timeline).
+- `src/__tests__/auth_guards.test.jsx` (8 tests) — Route guards, unauthorized redirection, and role routing.
+- `src/__tests__/student_ui.test.jsx` (5 tests) — Student dashboard, eligibility evaluation, and resume upload error states.
+- `src/__tests__/recruiter_ui.test.jsx` (8 tests) — Recruiter metrics, job publish guards, applicant tables, and ConfirmDialogs.
+- `src/__tests__/admin_ui.test.jsx` (7 tests) — Admin overview StatCards, pipeline breakdown, recruiter approval (UC-04), and user governance.
+
+---
+
+## 🔄 End-to-End Demo Script (`DEVELOPMENT_ROADMAP.md` §6)
+
+You can run the automated script with `npm run verify:demo` or follow these steps in the browser:
+
+1. **Step 1 — Sign in as Admin:**
+   - Go to `/login` $\to$ click the **Demo Admin** pill (`admin@hiretrack.edu` / `Admin@123456`).
+   - Land on `/admin/dashboard` $\to$ verify 5 persisted StatCards and the Applications Funnel breakdown.
+2. **Step 2 — Admin Approves Pending Recruiter (UC-04):**
+   - Navigate to `/admin/recruiters` $\to$ locate `NextGen AI Labs` (`recruiter.pending@startup.io`).
+   - Click **Review Details** to inspect company description, address, and contact person.
+   - Click **Approve** $\to$ confirm via the modal $\to$ status transitions to `approved`.
+3. **Step 3 — Recruiter Creates & Publishes Campus Drive:**
+   - Log out and sign in as `recruiter.approved@google.com` (or the newly approved recruiter).
+   - Navigate to `/recruiter/jobs/new` $\to$ fill in job title, salary, deadline, and eligibility criteria (Min CGPA: 8.0, Branches: CSE, ISE).
+   - Click **Publish Campus Drive** $\to$ job status becomes `published`.
+4. **Step 4 — Student Verifies Profile & Resume:**
+   - Log out and sign in as Student (`maya.rao@hiretrack.edu`).
+   - Navigate to `/student/profile` $\to$ check profile completeness bar (100%) and view attached PDF resume.
+5. **Step 5 — Student Discovers Job & Applies:**
+   - Navigate to `/student/jobs` $\to$ find the published drive.
+   - Click on the job card $\to$ observe the green *"You are eligible to apply"* banner.
+   - Click **Apply for this Position** $\to$ review the snapshot confirmation modal $\to$ submit application once.
+6. **Step 6 — Recruiter Shortlists Candidate & Schedules Interview:**
+   - Sign back in as Recruiter $\to$ navigate to `/recruiter/jobs` $\to$ click **Applicants**.
+   - Review Maya Rao's academic record and resume link.
+   - Click **Update Status** $\to$ choose **Shortlist** $\to$ confirm.
+   - Click **Interview** $\to$ select date/time, choose `Online`, enter Google Meet URL $\to$ click **Schedule & Notify**.
+7. **Step 7 — Student Tracks Interview Details:**
+   - Sign back in as Student $\to$ navigate to `/student/applications`.
+   - Open application details $\to$ observe status is `interview_scheduled`, with interview date/time, Google Meet URL, and the chronological timeline.
+8. **Step 8 — Admin Observes Updated Placement Metrics:**
+   - Sign in as Admin $\to$ view `/admin/dashboard`.
+   - Observe live counts: `Active Jobs`, `Applications`, and `statusBreakdown.interview_scheduled` reflect the changes made in the session.
+
+---
+
+## 🌐 Production Deployment Guide
+
+### 1. Database — MongoDB Atlas
+1. Create a free M0 cluster on [MongoDB Atlas](https://www.mongodb.com/atlas).
+2. Under **Database Access**, create a user with read/write permissions.
+3. Under **Network Access**, add `0.0.0.0/0` (allow from anywhere) or specific host IP addresses.
+4. Copy the connection string and set `MONGODB_URI` in your production environment.
+
+### 2. Backend — Render / Railway
+1. Create a new **Web Service** pointing to the repository.
+2. Configure settings:
+   - **Root Directory:** `server`
+   - **Environment:** `Node`
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+   - **Health Check Path:** `/api/v1/health`
+3. Add Environment Variables:
+   - `NODE_ENV=production`
+   - `PORT=5000`
+   - `MONGODB_URI=<Your-Atlas-URI>`
+   - `CLIENT_URL=https://your-frontend.vercel.app`
+   - `JWT_SECRET=<Generate-32-Char-Secret>`
+   - `CLOUDINARY_CLOUD_NAME=<optional>`
+   - `CLOUDINARY_API_KEY=<optional>`
+   - `CLOUDINARY_API_SECRET=<optional>`
+
+### 3. Frontend — Vercel / Netlify
+1. Create a new project on [Vercel](https://vercel.com) pointing to the repository.
+2. Configure settings:
+   - **Framework Preset:** `Vite`
+   - **Root Directory:** `client`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+3. Environment Variables:
+   - `VITE_API_BASE_URL=https://your-backend.onrender.com/api/v1`
+4. The included `client/vercel.json` provides automatic SPA route rewrite rules to `/index.html` preventing 404 errors on page reload.
+
+### 4. Media Storage — Cloudinary
+1. Create a Cloudinary account and copy your Cloud Name, API Key, and API Secret.
+2. Provide these credentials in `server/.env`.
+3. If omitted or during local development, HireTrack automatically switches to its built-in `LocalDevStorage` adapter without throwing errors.
+
+---
+
+## 📌 Known Limitations & Deferred Items (P1 / P2 Scope)
+
+In accordance with `DEVELOPMENT_ROADMAP.md` and the MVP charter:
+- **Email Dispatching:** Real external SMTP/SES email delivery is intentionally deferred. All alerts, status changes, and interview invites are tracked in-app via the chronological `ApplicationTimeline` and application status details.
+- **Multi-College Tenancy:** The MVP is engineered for a single college institution. Multi-tenant partitioning is reserved for future enterprise phases.
+- **Payment Processing:** No fees are levied on campus placements.
+- **WebSockets / Push Notifications:** Polling and manual refresh on demand are utilized instead of persistent socket connections to preserve minimal resource overhead.
+- **Third-Party Calendar Sync:** Calendar links (Google Meet, room details) are displayed as interactive URLs; direct Google Calendar API write synchronization is deferred.
+
+---
+
+## 🛡️ License
+
+Developed for the placement administration and campus recruitment of HireTrack College. Released under the ISC License.

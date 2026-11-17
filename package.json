@@ -10,7 +10,9 @@
     "test:server": "npm --prefix server test",
     "test:client": "npm --prefix client test",
     "test": "npm run test:server && npm run test:client",
-    "seed:admin": "npm --prefix server run seed:admin"
+    "seed:admin": "npm --prefix server run seed:admin",
+    "seed:demo": "npm --prefix server run seed:demo",
+    "verify:demo": "npm --prefix server run verify:demo"
   },
   "keywords": ["placement", "recruitment", "mern", "campus-hiring"],
   "author": "HireTrack Team",
