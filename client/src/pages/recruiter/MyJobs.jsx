@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { jobService } from '../../services/index.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { jobService, recruiterService } from '../../services/index.js';
 import DataTable from '../../components/DataTable.jsx';
 import Pagination from '../../components/Pagination.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import Button from '../../components/Button.jsx';
 import ConfirmDialog from '../../components/ConfirmDialog.jsx';
-import { PlusCircle, Users, CheckCircle, XCircle, Edit, Briefcase } from 'lucide-react';
+import { PlusCircle, Users, CheckCircle, XCircle, Edit, Briefcase, AlertTriangle } from 'lucide-react';
 
 export default function MyJobs() {
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,15 +27,25 @@ export default function MyJobs() {
   const [actionType, setActionType] = useState(''); // 'publish' or 'close'
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchJobs = async () => {
+  const fetchJobsAndProfile = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await jobService.getMyJobs({ page, limit: 10 });
-      if (response.success && response.data) {
-        setJobs(response.data.jobs || []);
-        setTotal(response.data.pagination?.total || 0);
-        setTotalPages(response.data.pagination?.totalPages || 1);
+      const [jobsRes, profRes] = await Promise.allSettled([
+        jobService.getMyJobs({ page, limit: 10 }),
+        recruiterService.getMyProfile()
+      ]);
+
+      if (jobsRes.status === 'fulfilled' && jobsRes.value.data) {
+        setJobs(jobsRes.value.data.jobs || []);
+        setTotal(jobsRes.value.data.pagination?.total || 0);
+        setTotalPages(jobsRes.value.data.pagination?.totalPages || 1);
+      } else if (jobsRes.status === 'rejected') {
+        throw new Error(jobsRes.reason?.message || 'Failed to load your jobs');
+      }
+
+      if (profRes.status === 'fulfilled' && profRes.value.data) {
+        setProfile(profRes.value.data);
       }
     } catch (err) {
       setError(err.message || 'Failed to load your jobs');
@@ -42,8 +55,11 @@ export default function MyJobs() {
   };
 
   useEffect(() => {
-    fetchJobs();
+    fetchJobsAndProfile();
   }, [page]);
+
+  const isPending = profile?.approvalStatus === 'pending' || user?.accountStatus === 'pending';
+  const isApproved = profile?.approvalStatus === 'approved' && user?.accountStatus === 'active';
 
   const handleActionConfirm = async () => {
     if (!actionJob || !actionType) return;
@@ -56,7 +72,7 @@ export default function MyJobs() {
       }
       setActionJob(null);
       setActionType('');
-      fetchJobs();
+      fetchJobsAndProfile();
     } catch (err) {
       alert(err.message || 'Action failed');
     } finally {
@@ -111,8 +127,11 @@ export default function MyJobs() {
             <Button
               variant="outline"
               size="sm"
-              className="text-emerald-600 hover:bg-emerald-50"
+              className={isApproved ? "text-emerald-600 hover:bg-emerald-50" : "text-slate-400 cursor-not-allowed"}
+              disabled={!isApproved}
+              title={!isApproved ? "Approval from placement cell required to publish drives" : "Publish to students"}
               onClick={() => {
+                if (!isApproved) return;
                 setActionJob(row);
                 setActionType('publish');
               }}
@@ -150,6 +169,19 @@ export default function MyJobs() {
 
   return (
     <div className="space-y-6">
+      {/* Pending Account Notice Banner */}
+      {isPending && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start space-x-3 text-amber-900">
+          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="space-y-1 text-xs">
+            <h4 className="font-bold text-sm">Account Awaiting Approval</h4>
+            <p>
+              Your recruiter account is awaiting placement-cell approval. You can draft and manage position details, but live drive publishing is disabled until verified.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900">Company Placement Drives</h2>

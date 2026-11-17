@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { jobService } from '../../services/index.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { jobService, recruiterService } from '../../services/index.js';
 import Card from '../../components/Card.jsx';
 import Button from '../../components/Button.jsx';
 import FormField from '../../components/FormField.jsx';
-import { ArrowLeft, Save, Send, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Send, AlertCircle, AlertTriangle, Loader2 } from 'lucide-react';
 
 const BRANCH_LIST = [
   'CSE', 'ISE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'AIML', 'DATA_SCIENCE'
@@ -21,11 +22,13 @@ const EMPLOYMENT_TYPES = [
 export default function CreateEditJob() {
   const { jobId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const isEdit = Boolean(jobId);
 
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [recruiterProfile, setRecruiterProfile] = useState(null);
 
   // Form Fields
   const [title, setTitle] = useState('');
@@ -39,6 +42,20 @@ export default function CreateEditJob() {
   const [selectedYears, setSelectedYears] = useState([2026]);
   const [description, setDescription] = useState('');
   const [requirements, setRequirements] = useState('');
+
+  useEffect(() => {
+    const fetchRecruiterStatus = async () => {
+      try {
+        const res = await recruiterService.getMyProfile();
+        if (res?.data) {
+          setRecruiterProfile(res.data);
+        }
+      } catch (err) {
+        // Fallback to user accountStatus
+      }
+    };
+    fetchRecruiterStatus();
+  }, []);
 
   useEffect(() => {
     if (isEdit) {
@@ -88,8 +105,15 @@ export default function CreateEditJob() {
     );
   };
 
+  const isPending = recruiterProfile?.approvalStatus === 'pending' || user?.accountStatus === 'pending';
+
   const handleSubmit = async (publishImmediately = false) => {
     setError('');
+
+    if (publishImmediately && isPending) {
+      setError('Approval from placement cell required to publish live drives. You can save as draft.');
+      return;
+    }
 
     if (!title.trim() || !description.trim() || !deadline) {
       setError('Please fill in all required fields (title, deadline, description).');
@@ -335,6 +359,13 @@ export default function CreateEditJob() {
             />
           </div>
 
+          {isPending && (
+            <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-xs flex items-center space-x-2">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 text-amber-600" />
+              <span>Approval from placement cell required to publish live drives. You can save as draft.</span>
+            </div>
+          )}
+
           {/* Form Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <Button
@@ -353,9 +384,10 @@ export default function CreateEditJob() {
               variant="primary"
               size="md"
               onClick={() => handleSubmit(true)}
-              disabled={submitting}
+              disabled={submitting || isPending}
               loading={submitting}
               icon={Send}
+              title={isPending ? 'Approval from placement cell required to publish' : ''}
             >
               {isEdit ? 'Update & Publish' : 'Publish Campus Drive'}
             </Button>

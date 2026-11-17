@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { jobService, recruiterService } from '../../services/index.js';
+import { jobService, recruiterService, applicationService } from '../../services/index.js';
 import Card from '../../components/Card.jsx';
 import StatCard from '../../components/StatCard.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
@@ -22,6 +22,8 @@ export default function RecruiterDashboard() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const [awaitingReviewCount, setAwaitingReviewCount] = useState(0);
+  const [upcomingInterviewsCount, setUpcomingInterviewsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,14 +31,35 @@ export default function RecruiterDashboard() {
       try {
         const [profRes, jobsRes] = await Promise.allSettled([
           recruiterService.getMyProfile(),
-          jobService.getMyJobs({ limit: 10 })
+          jobService.getMyJobs({ limit: 20 })
         ]);
 
         if (profRes.status === 'fulfilled' && profRes.value.data) {
           setProfile(profRes.value.data);
         }
+
         if (jobsRes.status === 'fulfilled' && jobsRes.value.data) {
-          setJobs(jobsRes.value.data.jobs || []);
+          const fetchedJobs = jobsRes.value.data.jobs || [];
+          setJobs(fetchedJobs);
+
+          // Calculate awaiting review & scheduled interviews across jobs
+          if (fetchedJobs.length > 0) {
+            const appsResults = await Promise.allSettled(
+              fetchedJobs.slice(0, 10).map((j) => applicationService.getJobApplications(j._id, { limit: 100 }))
+            );
+            let awaiting = 0;
+            let interviews = 0;
+            for (const res of appsResults) {
+              if (res.status === 'fulfilled' && res.value?.data?.applications) {
+                for (const app of res.value.data.applications) {
+                  if (['applied', 'under_review'].includes(app.status)) awaiting++;
+                  if (app.status === 'interview_scheduled') interviews++;
+                }
+              }
+            }
+            setAwaitingReviewCount(awaiting);
+            setUpcomingInterviewsCount(interviews);
+          }
         }
       } finally {
         setLoading(false);
@@ -109,27 +132,34 @@ export default function RecruiterDashboard() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Job Openings"
-          value={totalJobs}
-          subtitle="All created job requisitions"
+          title="Active Drives"
+          value={publishedJobs}
+          subtitle="Open for student applications"
           icon={Briefcase}
           color="indigo"
         />
         <StatCard
-          title="Active Published Drives"
-          value={publishedJobs}
-          subtitle="Open for student applications"
-          icon={CheckCircle2}
-          color="emerald"
-        />
-        <StatCard
-          title="Total Applicants Received"
+          title="Total Applicants"
           value={totalApplicants}
-          subtitle="Candidates across all positions"
+          subtitle="Received across all drives"
           icon={Users}
           color="sky"
+        />
+        <StatCard
+          title="Awaiting Review"
+          value={awaitingReviewCount}
+          subtitle="Applications pending screening"
+          icon={CheckCircle2}
+          color="amber"
+        />
+        <StatCard
+          title="Upcoming Interviews"
+          value={upcomingInterviewsCount}
+          subtitle="Scheduled candidate rounds"
+          icon={Calendar}
+          color="emerald"
         />
       </div>
 

@@ -1,5 +1,10 @@
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { env } from './env.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let isConnected = false;
 let mongodInstance = null;
@@ -9,27 +14,23 @@ export const connectDB = async (uri = env.MONGODB_URI) => {
     return mongoose.connection;
   }
 
-  // In test environment, attempt connection; if external cluster fails or has IP restrictions, fallback to MongoMemoryServer
+  // In test environment, use deterministic in-memory MongoMemoryServer with cached binary
   if (env.isTest) {
-    try {
-      const conn = await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 2000,
-        autoIndex: true
-      });
-      isConnected = true;
-      return conn.connection;
-    } catch {
-      if (!mongodInstance) {
-        const { MongoMemoryServer } = await import('mongodb-memory-server');
-        mongodInstance = await MongoMemoryServer.create();
-      }
-      const memUri = mongodInstance.getUri();
-      const conn = await mongoose.connect(memUri, {
-        autoIndex: true
-      });
-      isConnected = true;
-      return conn.connection;
+    if (!mongodInstance) {
+      const cachedBinary = path.resolve(
+        __dirname,
+        '../../node_modules/.cache/mongodb-memory-server/mongod-x64-win32-8.2.6.exe'
+      );
+      process.env.MONGOMS_SYSTEM_BINARY = cachedBinary;
+      const { MongoMemoryServer } = await import('mongodb-memory-server');
+      mongodInstance = await MongoMemoryServer.create();
     }
+    const memUri = mongodInstance.getUri();
+    const conn = await mongoose.connect(memUri, {
+      autoIndex: true
+    });
+    isConnected = true;
+    return conn.connection;
   }
 
   try {
@@ -70,7 +71,8 @@ export const disconnectDB = async () => {
     await mongoose.disconnect();
     isConnected = false;
   }
-  if (mongodInstance) {
+  // In test mode, keep the in-memory instance alive across test suites to prevent process thrashing
+  if (!env.isTest && mongodInstance) {
     await mongodInstance.stop();
     mongodInstance = null;
   }

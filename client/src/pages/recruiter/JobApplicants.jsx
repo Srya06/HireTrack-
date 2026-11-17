@@ -6,6 +6,7 @@ import Pagination from '../../components/Pagination.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import Button from '../../components/Button.jsx';
 import Modal from '../../components/Modal.jsx';
+import ConfirmDialog from '../../components/ConfirmDialog.jsx';
 import FormField from '../../components/FormField.jsx';
 import {
   ArrowLeft,
@@ -65,6 +66,7 @@ export default function JobApplicants() {
   const [statusNote, setStatusNote] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [statusError, setStatusError] = useState('');
+  const [consequentialDialogData, setConsequentialDialogData] = useState(null);
 
   // Schedule Interview Modal
   const [interviewModalApp, setInterviewModalApp] = useState(null);
@@ -112,25 +114,40 @@ export default function JobApplicants() {
     setStatusError('');
   };
 
-  // Submit Status Change
-  const handleStatusSubmit = async (e) => {
-    e.preventDefault();
-    if (!statusModalApp || !nextStatus) return;
-
+  const executeStatusUpdate = async (appId, targetStatus, note) => {
     setStatusUpdating(true);
     setStatusError('');
     try {
-      await applicationService.updateApplicationStatus(statusModalApp._id, {
-        status: nextStatus,
-        note: statusNote.trim()
+      await applicationService.updateApplicationStatus(appId, {
+        status: targetStatus,
+        note
       });
       setStatusModalApp(null);
+      setConsequentialDialogData(null);
       fetchApplicants();
     } catch (err) {
       setStatusError(err.message || 'Failed to update application status');
     } finally {
       setStatusUpdating(false);
     }
+  };
+
+  // Submit Status Change
+  const handleStatusSubmit = async (e) => {
+    e.preventDefault();
+    if (!statusModalApp || !nextStatus) return;
+
+    if (['rejected', 'selected'].includes(nextStatus)) {
+      setConsequentialDialogData({
+        appId: statusModalApp._id,
+        candidateName: statusModalApp.studentId?.name || 'Candidate',
+        nextStatus,
+        note: statusNote.trim()
+      });
+      return;
+    }
+
+    await executeStatusUpdate(statusModalApp._id, nextStatus, statusNote.trim());
   };
 
   // Open Interview Modal
@@ -427,6 +444,38 @@ export default function JobApplicants() {
           </div>
         </form>
       </Modal>
+
+      {/* Consequential Status Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={Boolean(consequentialDialogData)}
+        onClose={() => !statusUpdating && setConsequentialDialogData(null)}
+        onConfirm={() => {
+          if (consequentialDialogData) {
+            executeStatusUpdate(
+              consequentialDialogData.appId,
+              consequentialDialogData.nextStatus,
+              consequentialDialogData.note
+            );
+          }
+        }}
+        title={
+          consequentialDialogData?.nextStatus === 'rejected'
+            ? 'Confirm Candidate Rejection'
+            : 'Confirm Candidate Selection'
+        }
+        message={
+          consequentialDialogData?.nextStatus === 'rejected'
+            ? `Are you sure you want to reject candidate ${consequentialDialogData?.candidateName}? This decision is terminal and cannot be reversed.`
+            : `Are you sure you want to select candidate ${consequentialDialogData?.candidateName} for an offer? This will mark the candidate as selected.`
+        }
+        confirmText={
+          consequentialDialogData?.nextStatus === 'rejected'
+            ? 'Confirm Rejection'
+            : 'Confirm Selection'
+        }
+        variant={consequentialDialogData?.nextStatus === 'rejected' ? 'danger' : 'primary'}
+        loading={statusUpdating}
+      />
     </div>
   );
 }
