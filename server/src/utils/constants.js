@@ -1,0 +1,90 @@
+export const ROLES = Object.freeze({
+  STUDENT: 'student',
+  RECRUITER: 'recruiter',
+  ADMIN: 'admin'
+});
+
+export const USER_STATUSES = Object.freeze({
+  ACTIVE: 'active',
+  PENDING: 'pending',
+  SUSPENDED: 'suspended',
+  REJECTED: 'rejected'
+});
+
+export const RECRUITER_APPROVAL_STATUSES = Object.freeze({
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected'
+});
+
+export const JOB_STATUSES = Object.freeze({
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
+  CLOSED: 'closed',
+  ARCHIVED: 'archived'
+});
+
+export const EMPLOYMENT_TYPES = Object.freeze({
+  FULL_TIME: 'full_time',
+  INTERNSHIP: 'internship',
+  CONTRACT: 'contract',
+  OTHER: 'other'
+});
+
+export const APPLICATION_STATUSES = Object.freeze({
+  APPLIED: 'applied',
+  UNDER_REVIEW: 'under_review',
+  SHORTLISTED: 'shortlisted',
+  INTERVIEW_SCHEDULED: 'interview_scheduled',
+  SELECTED: 'selected',
+  REJECTED: 'rejected',
+  WITHDRAWN: 'withdrawn'
+});
+
+export const TERMINAL_APPLICATION_STATUSES = Object.freeze([
+  APPLICATION_STATUSES.SELECTED,
+  APPLICATION_STATUSES.REJECTED,
+  APPLICATION_STATUSES.WITHDRAWN
+]);
+
+export const APPLICATION_STATUS_TRANSITIONS = Object.freeze({
+  [APPLICATION_STATUSES.APPLIED]: [
+    APPLICATION_STATUSES.UNDER_REVIEW,
+    APPLICATION_STATUSES.SHORTLISTED,
+    APPLICATION_STATUSES.REJECTED,
+    APPLICATION_STATUSES.WITHDRAWN
+  ],
+  [APPLICATION_STATUSES.UNDER_REVIEW]: [
+    APPLICATION_STATUSES.SHORTLISTED,
+    APPLICATION_STATUSES.REJECTED,
+    APPLICATION_STATUSES.WITHDRAWN
+  ],
+  [APPLICATION_STATUSES.SHORTLISTED]: [
+    APPLICATION_STATUSES.INTERVIEW_SCHEDULED,
+    APPLICATION_STATUSES.SELECTED,
+    APPLICATION_STATUSES.REJECTED,
+    APPLICATION_STATUSES.WITHDRAWN
+  ],
+  [APPLICATION_STATUSES.INTERVIEW_SCHEDULED]: [
+    APPLICATION_STATUSES.SELECTED,
+    APPLICATION_STATUSES.REJECTED,
+    APPLICATION_STATUSES.WITHDRAWN
+  ],
+  [APPLICATION_STATUSES.SELECTED]: [],
+  [APPLICATION_STATUSES.REJECTED]: [],
+  [APPLICATION_STATUSES.WITHDRAWN]: []
+});
+
+export const INTERVIEW_MODES = Object.freeze({
+  ONLINE: 'online',
+  IN_PERSON: 'in_person',
+  PHONE: 'phone'
+});
+
+export const INTERVIEW_STATUSES = Object.freeze({
+  SCHEDULED: 'scheduled',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+  RESCHEDULED: 'rescheduled'
+});
+
