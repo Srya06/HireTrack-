@@ -21,6 +21,12 @@ const studentProfileSchema = new mongoose.Schema(
       unique: true,
       index: true
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Organization',
+      default: null,
+      index: true
+    },
     studentId: {
       type: String,
       required: [true, 'Student ID (USN / Roll No) is required'],

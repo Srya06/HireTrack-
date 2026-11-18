@@ -3,8 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { Loader2 } from 'lucide-react';
 
-export default function RoleRoute({ allowedRoles = [], children }) {
-  const { user, loading } = useAuth();
+export default function RoleRoute({ allowedRoles = [], allowedMemberships = [], children }) {
+  const { user, membershipRoles = [], loading } = useAuth();
 
   if (loading) {
     return (
@@ -14,7 +14,13 @@ export default function RoleRoute({ allowedRoles = [], children }) {
     );
   }
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  const matchesRole = user && allowedRoles.includes(user.role);
+  const matchesMembership =
+    user &&
+    allowedMemberships.length > 0 &&
+    membershipRoles.some((m) => allowedMemberships.includes(m));
+
+  if (!matchesRole && !matchesMembership) {
     return <Navigate to="/access-denied" replace />;
   }
 

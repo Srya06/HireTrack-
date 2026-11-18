@@ -1,42 +1,27 @@
-import { AuditLog } from '../models/auditLog.model.js';
+import { recordAuditEvent } from '../services/audit.service.js';
 
 /**
- * Creates an immutable audit log entry for administrative actions.
- * Only non-sensitive, allowlisted metadata is persisted.
- *
- * @param {object} params
- * @param {string|import('mongoose').Types.ObjectId} params.actorId
- * @param {string} params.action
- * @param {string} params.resourceType
- * @param {string|import('mongoose').Types.ObjectId} [params.resourceId=null]
- * @param {object} [params.metadata={}]
+ * Legacy v1 helper for recording administrative audit entries.
+ * Delegates to the single v3 audit service so v1 writes keep working unchanged.
  */
 export const logAdminAction = async ({
+  organizationId = null,
   actorId,
   action,
   resourceType,
   resourceId = null,
+  entityType,
+  entityId = null,
   metadata = {}
 }) => {
-  try {
-    // Strip any sensitive properties if accidentally passed
-    const sanitizedMetadata = { ...metadata };
-    delete sanitizedMetadata.password;
-    delete sanitizedMetadata.passwordHash;
-    delete sanitizedMetadata.token;
-    delete sanitizedMetadata.accessToken;
-    delete sanitizedMetadata.resume;
-
-    await AuditLog.create({
-      actorId,
-      action,
-      resourceType,
-      resourceId,
-      metadata: sanitizedMetadata
-    });
-  } catch (err) {
-    // Logging errors should not block critical operations but should be reported
-    console.error('[AuditLog] Failed to record audit log:', err.message);
-  }
+  return recordAuditEvent({
+    organizationId,
+    actorId,
+    action,
+    entityType: entityType || resourceType,
+    entityId: entityId ?? resourceId,
+    resourceType: resourceType || entityType,
+    resourceId: resourceId ?? entityId,
+    metadata
+  });
 };
-

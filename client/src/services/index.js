@@ -5,6 +5,8 @@ export * as studentService from './student.service.js';
 export * as recruiterService from './recruiter.service.js';
 export * as interviewService from './interview.service.js';
 export * as adminService from './admin.service.js';
+export * as staffService from './staff.service.js';
+export * as configService from './config.service.js';
 export * as notificationService from './notification.service.js';
 export * as healthService from './health.service.js';
 export { default as api } from './api.js';

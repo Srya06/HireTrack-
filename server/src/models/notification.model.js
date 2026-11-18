@@ -8,6 +8,12 @@ const notificationSchema = new mongoose.Schema(
       required: [true, 'User ID is required'],
       index: true
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Organization',
+      default: null,
+      index: true
+    },
     type: {
       type: String,
       required: [true, 'Notification type is required'],
@@ -50,6 +56,7 @@ const notificationSchema = new mongoose.Schema(
 
 notificationSchema.index({ userId: 1, readAt: 1, createdAt: -1 });
 notificationSchema.index({ userId: 1, createdAt: -1 });
+notificationSchema.index({ organizationId: 1, userId: 1, readAt: 1, createdAt: -1 });
 
 export const Notification = mongoose.model('Notification', notificationSchema);
 

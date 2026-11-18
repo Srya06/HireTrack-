@@ -2,6 +2,12 @@ import mongoose from 'mongoose';
 
 const auditLogSchema = new mongoose.Schema(
   {
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Organization',
+      default: null,
+      index: true
+    },
     actorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -13,6 +19,15 @@ const auditLogSchema = new mongoose.Schema(
       required: [true, 'Action is required'],
       trim: true,
       index: true
+    },
+    entityType: {
+      type: String,
+      trim: true,
+      index: true
+    },
+    entityId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null
     },
     resourceType: {
       type: String,
@@ -47,7 +62,25 @@ const auditLogSchema = new mongoose.Schema(
   }
 );
 
+// Keep v1 resourceType/resourceId and v3 entityType/entityId synchronized
+auditLogSchema.pre('validate', function syncEntityAndResource(next) {
+  if (!this.entityType && this.resourceType) {
+    this.entityType = this.resourceType;
+  } else if (!this.resourceType && this.entityType) {
+    this.resourceType = this.entityType;
+  }
+
+  if (!this.entityId && this.resourceId) {
+    this.entityId = this.resourceId;
+  } else if (!this.resourceId && this.entityId) {
+    this.resourceId = this.entityId;
+  }
+
+  next();
+});
+
 auditLogSchema.index({ actorId: 1, createdAt: -1 });
+auditLogSchema.index({ organizationId: 1, entityType: 1, createdAt: -1 });
 
 export const AuditLog = mongoose.model('AuditLog', auditLogSchema);
 

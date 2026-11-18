@@ -115,7 +115,10 @@ All primary commands can be executed directly from the root workspace:
 | `npm run test:server` | Runs all 7 backend Jest test suites (85 tests) |
 | `npm run test:client` | Runs all 6 frontend Vitest test suites (34 tests) |
 | `npm run seed:admin` | Seeds default administrative user account |
-| `npm run seed:demo` | Seeds full demo ecosystem (3 roles, jobs, applications, interviews) |
+| `npm run seed:org` | Idempotently seeds the default v3 Organization (`DEFAULT_ORG_*` env vars) |
+| `npm run seed:demo` | Seeds full demo ecosystem (3 roles, jobs, applications, interviews, default org + memberships) |
+| `npm run migrate:v3-org-backfill -- --dry-run` | Previews v3 org & membership backfill counts without modifying DB (zero PII logged) |
+| `npm run migrate:v3-org-backfill` | Idempotently backfills default `organizationId` onto Users & StudentProfiles and creates `STUDENT`/`ORG_ADMIN` memberships |
 | `npm run verify:demo` | Executes programmatic 8-step demo script with step-by-step assertions |
 
 ---

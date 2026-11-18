@@ -1,11 +1,71 @@
 import bcrypt from 'bcryptjs';
-import { User, StudentProfile, RecruiterProfile } from '../models/index.js';
+import {
+  User,
+  StudentProfile,
+  RecruiterProfile,
+  Organization,
+  OrganizationMembership
+} from '../models/index.js';
 import { ApiError } from '../utils/ApiError.js';
 import { signToken } from '../utils/token.js';
-import { ROLES, USER_STATUSES, RECRUITER_APPROVAL_STATUSES } from '../utils/constants.js';
+import { env } from '../config/env.js';
+import { isFeatureEnabled } from '../config/features.js';
+import {
+  ROLES,
+  USER_STATUSES,
+  RECRUITER_APPROVAL_STATUSES,
+  MEMBERSHIP_ROLES,
+  MEMBERSHIP_STATUSES,
+  ORGANIZATION_STATUSES
+} from '../utils/constants.js';
+
+/**
+ * Resolves active organization memberships and primary organization for a user.
+ * Additive helper used by login, register, and GET /me.
+ */
+export const getUserMembershipContext = async (user) => {
+  if (!user?._id) {
+    return { organization: null, memberships: [] };
+  }
+
+  const memberships = await OrganizationMembership.find({
+    userId: user._id,
+    status: MEMBERSHIP_STATUSES.ACTIVE
+  }).populate('organizationId', 'name slug timezone status');
+
+  const activeMemberships = memberships.filter(
+    (m) => m.organizationId && m.organizationId.status === ORGANIZATION_STATUSES.ACTIVE
+  );
+
+  let primaryOrg = null;
+  if (activeMemberships.length > 0) {
+    if (user.organizationId) {
+      const matched = activeMemberships.find(
+        (m) => m.organizationId._id.toString() === user.organizationId.toString()
+      );
+      primaryOrg = matched ? matched.organizationId : activeMemberships[0].organizationId;
+    } else {
+      primaryOrg = activeMemberships[0].organizationId;
+    }
+  }
+
+  return {
+    organization: primaryOrg ? primaryOrg.toJSON() : null,
+    memberships: activeMemberships.map((m) => {
+      const obj = m.toJSON();
+      return {
+        id: obj.id,
+        organizationId: m.organizationId._id.toString(),
+        role: obj.role,
+        status: obj.status,
+        grantedAt: obj.grantedAt
+      };
+    })
+  };
+};
 
 export const registerUser = async (data) => {
-  // Allowlist incoming fields strictly - ignore any client-sent accountStatus, admin flags or IDs
+  // Allowlist incoming fields strictly - ignore any client-sent accountStatus, organizationId, admin flags or IDs
   const { name, email, password, role, studentProfile, recruiterProfile } = data;
 
   if (role === ROLES.ADMIN) {
@@ -14,6 +74,16 @@ export const registerUser = async (data) => {
 
   if (![ROLES.STUDENT, ROLES.RECRUITER].includes(role)) {
     throw ApiError.badRequest("Role must be either 'student' or 'recruiter'");
+  }
+
+  if (role === ROLES.STUDENT && !isFeatureEnabled('ALLOW_PUBLIC_STUDENT_SIGNUP')) {
+    throw ApiError.forbidden(
+      'Public student registration is currently disabled. Please contact your placement administrator.'
+    );
+  }
+
+  if (role === ROLES.RECRUITER && !isFeatureEnabled('LEGACY_RECRUITER_FLOW')) {
+    throw ApiError.forbidden('Recruiter registration is disabled in this deployment.');
   }
 
   const normalizedEmail = email.toLowerCase().trim();
@@ -46,12 +116,19 @@ export const registerUser = async (data) => {
   const accountStatus =
     role === ROLES.RECRUITER ? USER_STATUSES.PENDING : USER_STATUSES.ACTIVE;
 
+  // Attach default organization if one has been seeded
+  const defaultOrg = await Organization.findOne({
+    slug: env.DEFAULT_ORG_SLUG,
+    status: ORGANIZATION_STATUSES.ACTIVE
+  });
+
   const user = await User.create({
     name: name.trim(),
     email: normalizedEmail,
     passwordHash,
     role,
-    accountStatus
+    accountStatus,
+    organizationId: defaultOrg ? defaultOrg._id : null
   });
 
   let profile = null;
@@ -59,6 +136,7 @@ export const registerUser = async (data) => {
   if (role === ROLES.STUDENT) {
     profile = await StudentProfile.create({
       userId: user._id,
+      organizationId: defaultOrg ? defaultOrg._id : null,
       studentId: studentProfile.studentId.trim(),
       branch: studentProfile.branch.trim(),
       graduationYear: Number(studentProfile.graduationYear),
@@ -66,6 +144,15 @@ export const registerUser = async (data) => {
       phone: studentProfile.phone ? String(studentProfile.phone).trim() : '',
       skills: Array.isArray(studentProfile.skills) ? studentProfile.skills : []
     });
+
+    if (defaultOrg) {
+      await OrganizationMembership.create({
+        organizationId: defaultOrg._id,
+        userId: user._id,
+        role: MEMBERSHIP_ROLES.STUDENT,
+        status: MEMBERSHIP_STATUSES.ACTIVE
+      });
+    }
   } else if (role === ROLES.RECRUITER) {
     profile = await RecruiterProfile.create({
       userId: user._id,
@@ -79,10 +166,13 @@ export const registerUser = async (data) => {
   }
 
   const accessToken = signToken({ id: user._id, role: user.role });
+  const membershipContext = await getUserMembershipContext(user);
 
   return {
     user: user.toJSON(),
     profile: profile ? profile.toJSON() : null,
+    organization: membershipContext.organization,
+    memberships: membershipContext.memberships,
     accessToken
   };
 };
@@ -122,10 +212,13 @@ export const loginUser = async ({ email, password }) => {
   }
 
   const accessToken = signToken({ id: user._id, role: user.role });
+  const membershipContext = await getUserMembershipContext(user);
 
   return {
     user: user.toJSON(),
     profile: profile ? profile.toJSON() : null,
+    organization: membershipContext.organization,
+    memberships: membershipContext.memberships,
     accessToken
   };
 };

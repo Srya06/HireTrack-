@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { connectDB, disconnectDB } from '../config/db.js';
 import { env } from '../config/env.js';
 import { ensureDemoResumeFile } from '../utils/demoPdfGenerator.js';
+import { runOrgBackfill } from './migrateOrgBackfill.js';
 import {
   User,
   StudentProfile,
@@ -327,6 +328,9 @@ export const seedDemo = async () => {
       });
       console.log('  ✔ Scheduled Interview for Maya Rao');
     }
+
+    // 8. Ensure default Organization & v3 OrganizationMemberships for seeded demo users
+    await runOrgBackfill({ dryRun: false });
 
     console.log('\n[Seed Demo] Dataset seeded successfully!');
     console.log('========================================================================');

@@ -56,6 +56,7 @@ export const errorMiddleware = (err, req, res, next) => {
 
   const response = {
     success: false,
+    code: error.code || 'INTERNAL_ERROR',
     message: error.message,
     errors: error.errors && error.errors.length > 0 ? error.errors : [{ message: error.message }]
   };

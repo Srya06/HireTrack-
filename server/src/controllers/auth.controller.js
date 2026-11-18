@@ -21,12 +21,15 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const getMe = asyncHandler(async (req, res) => {
+  const membershipContext = await authService.getUserMembershipContext(req.user);
   return sendSuccess(res, {
     statusCode: 200,
     message: 'Current user profile retrieved',
     data: {
       user: req.user.toJSON(),
-      profile: req.profile ? req.profile.toJSON() : null
+      profile: req.profile ? req.profile.toJSON() : null,
+      organization: membershipContext.organization,
+      memberships: membershipContext.memberships
     }
   });
 });

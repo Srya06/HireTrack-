@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useFeatureFlags } from '../../context/FeatureFlagsContext.jsx';
 import Button from '../../components/Button.jsx';
 import FormField from '../../components/FormField.jsx';
 import Card from '../../components/Card.jsx';
@@ -8,6 +9,7 @@ import { LogIn, AlertCircle, Sparkles } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
+  const { flags } = useFeatureFlags();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,11 +27,22 @@ export default function Login() {
 
     try {
       const loggedInUser = await login({ email, password });
+      const activeRoles = (loggedInUser.memberships || [])
+        .filter((m) => m.status === 'active')
+        .map((m) => m.role);
+
       if (from) {
         navigate(from, { replace: true });
-      } else if (loggedInUser.role === 'admin') {
+      } else if (
+        loggedInUser.role === 'admin' ||
+        activeRoles.some((r) =>
+          ['ORG_ADMIN', 'PLACEMENT_COORDINATOR', 'AMBASSADOR_COORDINATOR'].includes(r)
+        )
+      ) {
         navigate('/admin/dashboard', { replace: true });
-      } else if (loggedInUser.role === 'recruiter') {
+      } else if (activeRoles.includes('INTERVIEWER') && !activeRoles.includes('STUDENT')) {
+        navigate('/interviewer/dashboard', { replace: true });
+      } else if (loggedInUser.role === 'recruiter' && flags.LEGACY_RECRUITER_FLOW) {
         navigate('/recruiter/dashboard', { replace: true });
       } else {
         navigate('/student/dashboard', { replace: true });
@@ -69,20 +82,24 @@ export default function Login() {
             >
               Demo Admin
             </button>
-            <button
-              type="button"
-              onClick={() => fillCredentials('recruiter.approved@google.com', 'Recruiter@123456')}
-              className="text-xs bg-white text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 hover:bg-slate-50 font-medium"
-            >
-              Demo Recruiter
-            </button>
-            <button
-              type="button"
-              onClick={() => fillCredentials('recruiter.pending@startup.io', 'Recruiter@123456')}
-              className="text-xs bg-white text-amber-700 px-2.5 py-1 rounded-md border border-amber-200 hover:bg-amber-50 font-medium"
-            >
-              Pending Recruiter
-            </button>
+            {flags.LEGACY_RECRUITER_FLOW && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => fillCredentials('recruiter.approved@google.com', 'Recruiter@123456')}
+                  className="text-xs bg-white text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 hover:bg-slate-50 font-medium"
+                >
+                  Demo Recruiter
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillCredentials('recruiter.pending@startup.io', 'Recruiter@123456')}
+                  className="text-xs bg-white text-amber-700 px-2.5 py-1 rounded-md border border-amber-200 hover:bg-amber-50 font-medium"
+                >
+                  Pending Recruiter
+                </button>
+              </>
+            )}
             <button
               type="button"
               onClick={() => fillCredentials('maya.rao@hiretrack.edu', 'Student@123456')}

@@ -6,3 +6,5 @@ export { Application } from './application.model.js';
 export { Interview } from './interview.model.js';
 export { AuditLog } from './auditLog.model.js';
 export { Notification } from './notification.model.js';
+export { Organization } from './organization.model.js';
+export { OrganizationMembership } from './organizationMembership.model.js';

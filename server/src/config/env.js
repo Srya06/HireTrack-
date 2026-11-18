@@ -19,6 +19,10 @@ export const env = Object.freeze({
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
   MAX_RESUME_SIZE_MB: parseInt(process.env.MAX_RESUME_SIZE_MB, 10) || 5,
+  DEFAULT_ORG_NAME: process.env.DEFAULT_ORG_NAME || 'HireTrack Campus Organization',
+  DEFAULT_ORG_SLUG: (process.env.DEFAULT_ORG_SLUG || 'default-org').toLowerCase().trim(),
+  DEFAULT_ORG_TIMEZONE: process.env.DEFAULT_ORG_TIMEZONE || 'Asia/Kolkata',
+  DEFAULT_ORG_STATUS: process.env.DEFAULT_ORG_STATUS || 'active',
   isProduction: (process.env.NODE_ENV || 'development') === 'production',
   isDevelopment: (process.env.NODE_ENV || 'development') === 'development',
   isTest: (process.env.NODE_ENV || 'development') === 'test'

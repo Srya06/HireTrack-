@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useFeatureFlags } from '../context/FeatureFlagsContext.jsx';
 import {
   LayoutDashboard,
   Briefcase,
@@ -13,15 +14,20 @@ import {
   Menu,
   X,
   PlusCircle,
-  Clock,
-  Sparkles
+  ClipboardList,
+  MessageSquare,
+  Calendar,
+  TrendingUp,
+  Award
 } from 'lucide-react';
 import StatusBadge from '../components/StatusBadge.jsx';
 import NotificationBell from '../components/NotificationBell.jsx';
 
 export default function DashboardLayout() {
-  const { user, logout } = useAuth();
+  const { user, organization, membershipRoles = [], logout } = useAuth();
+  const { flags } = useFeatureFlags();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -31,39 +37,119 @@ export default function DashboardLayout() {
     navigate('/login');
   };
 
-  // Role-specific navigation items
+  const hasOrgAdmin = membershipRoles.includes('ORG_ADMIN') || user?.role === 'admin';
+  const hasPlacementCoordinator = membershipRoles.includes('PLACEMENT_COORDINATOR');
+  const hasAmbassadorCoordinator = membershipRoles.includes('AMBASSADOR_COORDINATOR');
+  const hasAdminWorkspace = hasOrgAdmin || hasPlacementCoordinator || hasAmbassadorCoordinator;
+  const hasInterviewerWorkspace = membershipRoles.includes('INTERVIEWER');
+  const hasStudentWorkspace = membershipRoles.includes('STUDENT') || user?.role === 'student';
+  const hasLegacyRecruiterWorkspace =
+    Boolean(flags.LEGACY_RECRUITER_FLOW) && user?.role === 'recruiter';
+
+  // Determine active workspace from URL path with safe fallback to user's primary workspace
+  const resolveWorkspace = () => {
+    if (location.pathname.startsWith('/admin') && hasAdminWorkspace) return 'admin';
+    if (location.pathname.startsWith('/interviewer') && hasInterviewerWorkspace) return 'interviewer';
+    if (location.pathname.startsWith('/recruiter') && hasLegacyRecruiterWorkspace) return 'recruiter';
+    if (location.pathname.startsWith('/student') && hasStudentWorkspace) return 'student';
+
+    if (hasAdminWorkspace) return 'admin';
+    if (hasInterviewerWorkspace) return 'interviewer';
+    if (hasLegacyRecruiterWorkspace) return 'recruiter';
+    return 'student';
+  };
+
+  const activeWorkspace = resolveWorkspace();
+
+  const availableWorkspaces = [
+    ...(hasStudentWorkspace ? [{ id: 'student', label: 'Student', to: '/student/dashboard' }] : []),
+    ...(hasAdminWorkspace ? [{ id: 'admin', label: 'Admin / Placement', to: '/admin/dashboard' }] : []),
+    ...(hasInterviewerWorkspace
+      ? [{ id: 'interviewer', label: 'Interviewer', to: '/interviewer/dashboard' }]
+      : []),
+    ...(hasLegacyRecruiterWorkspace
+      ? [{ id: 'recruiter', label: 'Recruiter', to: '/recruiter/dashboard' }]
+      : [])
+  ];
+
+  // Role- & feature-flag-aware navigation items (unbuilt v3 modules hidden by flag; Mock Tests & Mock Interviews kept separate)
   const studentNav = [
     { name: 'Dashboard', to: '/student/dashboard', icon: LayoutDashboard },
-    { name: 'Browse Jobs', to: '/student/jobs', icon: Briefcase },
+    ...(flags.V3_OPPORTUNITIES_ENABLED
+      ? [{ name: 'Opportunities', to: '/student/opportunities', icon: Briefcase }]
+      : [{ name: 'Browse Jobs', to: '/student/jobs', icon: Briefcase }]),
     { name: 'My Applications', to: '/student/applications', icon: FileText },
+    ...(flags.V3_MOCK_TESTS_ENABLED
+      ? [{ name: 'Mock Tests', to: '/student/mock-tests', icon: ClipboardList }]
+      : []),
+    ...(flags.V3_AI_INTERVIEWS_ENABLED || flags.V3_HUMAN_INTERVIEWS_ENABLED
+      ? [{ name: 'Mock Interviews', to: '/student/mock-interviews', icon: MessageSquare }]
+      : []),
+    ...(flags.V3_READINESS_ENABLED
+      ? [{ name: 'Readiness', to: '/student/readiness', icon: TrendingUp }]
+      : []),
+    ...(flags.V3_AMBASSADORS_ENABLED
+      ? [{ name: 'Ambassadors', to: '/student/ambassador', icon: Award }]
+      : []),
     { name: 'Profile & Resume', to: '/student/profile', icon: User }
   ];
 
-  const recruiterNav = [
-    { name: 'Dashboard', to: '/recruiter/dashboard', icon: LayoutDashboard },
-    { name: 'My Jobs', to: '/recruiter/jobs', icon: Briefcase },
-    { name: 'Post New Job', to: '/recruiter/jobs/new', icon: PlusCircle },
-    { name: 'Company Profile', to: '/recruiter/profile', icon: Building2 }
-  ];
+  const recruiterNav = flags.LEGACY_RECRUITER_FLOW
+    ? [
+        { name: 'Dashboard', to: '/recruiter/dashboard', icon: LayoutDashboard },
+        { name: 'My Jobs', to: '/recruiter/jobs', icon: Briefcase },
+        { name: 'Post New Job', to: '/recruiter/jobs/new', icon: PlusCircle },
+        { name: 'Company Profile', to: '/recruiter/profile', icon: Building2 }
+      ]
+    : [];
 
   const adminNav = [
     { name: 'Dashboard Overview', to: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Pending Recruiters', to: '/admin/recruiters', icon: Building2 },
-    { name: 'User Management', to: '/admin/users', icon: Users },
-    { name: 'Job Moderation', to: '/admin/jobs', icon: Briefcase }
+    ...(hasOrgAdmin ? [{ name: 'Staff & Roles', to: '/admin/staff', icon: ShieldCheck }] : []),
+    ...(flags.LEGACY_RECRUITER_FLOW && hasOrgAdmin
+      ? [{ name: 'Pending Recruiters', to: '/admin/recruiters', icon: Building2 }]
+      : []),
+    ...(hasOrgAdmin ? [{ name: 'User Management', to: '/admin/users', icon: Users }] : []),
+    ...(flags.V3_OPPORTUNITIES_ENABLED && (hasOrgAdmin || hasPlacementCoordinator)
+      ? [{ name: 'Opportunities', to: '/admin/opportunities', icon: Briefcase }]
+      : hasOrgAdmin || hasPlacementCoordinator
+      ? [{ name: 'Job Moderation', to: '/admin/jobs', icon: Briefcase }]
+      : []),
+    ...(flags.V3_MOCK_TESTS_ENABLED && (hasOrgAdmin || hasPlacementCoordinator)
+      ? [{ name: 'Mock Tests', to: '/admin/mock-tests', icon: ClipboardList }]
+      : []),
+    ...(flags.V3_AMBASSADORS_ENABLED && (hasOrgAdmin || hasAmbassadorCoordinator)
+      ? [{ name: 'Ambassadors', to: '/admin/ambassadors', icon: Award }]
+      : [])
+  ];
+
+  const interviewerNav = [
+    { name: 'Assigned Sessions', to: '/interviewer/dashboard', icon: Calendar }
   ];
 
   const navItems =
-    user?.role === 'admin'
+    activeWorkspace === 'admin'
       ? adminNav
-      : user?.role === 'recruiter'
+      : activeWorkspace === 'interviewer'
+      ? interviewerNav
+      : activeWorkspace === 'recruiter'
       ? recruiterNav
       : studentNav;
+
+  const workspaceTitle =
+    activeWorkspace === 'admin'
+      ? 'Admin & Placement Workspace'
+      : activeWorkspace === 'interviewer'
+      ? 'Interviewer Workspace'
+      : activeWorkspace === 'recruiter'
+      ? 'Corporate Recruitment Portal'
+      : 'Student Placement Portal';
 
   const roleColors = {
     admin: 'bg-purple-100 text-purple-800 border-purple-200',
     recruiter: 'bg-blue-100 text-blue-800 border-blue-200',
-    student: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+    student: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    interviewer: 'bg-amber-100 text-amber-800 border-amber-200'
   };
 
   return (
@@ -76,29 +162,31 @@ export default function DashboardLayout() {
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
               HT
             </div>
-            <div>
-              <span className="text-base font-bold text-slate-900 tracking-tight">HireTrack</span>
-              <span className="block text-[10px] text-slate-500 uppercase tracking-widest font-semibold">
-                Placement Cell
+            <div className="min-w-0">
+              <span className="text-base font-bold text-slate-900 tracking-tight block truncate">
+                HireTrack
+              </span>
+              <span className="block text-[10px] text-slate-500 uppercase tracking-widest font-semibold truncate">
+                {organization?.name || 'Placement Portal'}
               </span>
             </div>
           </div>
 
           {/* User Profile Snippet */}
-          <div className="p-4 mx-3 my-3 bg-slate-50 border border-slate-100 rounded-xl">
+          <div className="p-4 mx-3 my-3 bg-slate-50 border border-slate-100 rounded-xl space-y-2.5">
             <div className="flex items-center space-x-3">
               <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
                 {user?.name?.charAt(0) || 'U'}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-slate-900 truncate">{user?.name}</p>
-                <div className="flex items-center space-x-1.5 mt-0.5">
+                <div className="flex flex-wrap items-center gap-1 mt-0.5">
                   <span
                     className={`text-[10px] font-semibold px-2 py-0.2 rounded-full border uppercase tracking-wider ${
-                      roleColors[user?.role] || 'bg-slate-100 text-slate-700 border-slate-200'
+                      roleColors[activeWorkspace] || roleColors[user?.role] || 'bg-slate-100 text-slate-700 border-slate-200'
                     }`}
                   >
-                    {user?.role}
+                    {membershipRoles[0] || user?.role}
                   </span>
                   {user?.accountStatus && user?.accountStatus !== 'active' && (
                     <StatusBadge status={user.accountStatus} size="sm" />
@@ -106,6 +194,30 @@ export default function DashboardLayout() {
                 </div>
               </div>
             </div>
+
+            {availableWorkspaces.length > 1 && (
+              <div className="pt-2 border-t border-slate-200/80">
+                <span className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  Workspace
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {availableWorkspaces.map((ws) => (
+                    <button
+                      key={ws.id}
+                      type="button"
+                      onClick={() => navigate(ws.to)}
+                      className={`text-[11px] px-2 py-1 rounded-md font-medium transition-colors ${
+                        activeWorkspace === ws.id
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {ws.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Navigation links */}
@@ -214,11 +326,7 @@ export default function DashboardLayout() {
               <Menu className="w-5 h-5" />
             </button>
             <h1 className="text-sm sm:text-base font-semibold text-slate-800">
-              {user?.role === 'admin'
-                ? 'Placement Cell Administration'
-                : user?.role === 'recruiter'
-                ? 'Corporate Recruitment Portal'
-                : 'Student Placement Portal'}
+              {workspaceTitle}
             </h1>
           </div>
 

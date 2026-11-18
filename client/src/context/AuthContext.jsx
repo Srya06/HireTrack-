@@ -5,9 +5,29 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [organization, setOrganization] = useState(null);
+  const [memberships, setMemberships] = useState([]);
   const [token, setToken] = useState(() => localStorage.getItem('hiretrack_token') || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const applySessionPayload = (payload, activeToken) => {
+    const nextUser = payload.user || payload;
+    setUser(nextUser);
+    setOrganization(payload.organization || null);
+    setMemberships(Array.isArray(payload.memberships) ? payload.memberships : []);
+    if (activeToken !== undefined) {
+      setToken(activeToken);
+    }
+  };
+
+  const clearSessionState = () => {
+    localStorage.removeItem('hiretrack_token');
+    setUser(null);
+    setOrganization(null);
+    setMemberships([]);
+    setToken(null);
+  };
 
   // Restore authenticated session on mount
   useEffect(() => {
@@ -21,19 +41,14 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await authService.getMe();
         if (response.success && response.data) {
-          // getMe returns user and role profile
-          setUser(response.data.user || response.data);
-          setToken(storedToken);
+          // getMe returns user, profile, organization, and memberships
+          applySessionPayload(response.data, storedToken);
         } else {
-          localStorage.removeItem('hiretrack_token');
-          setUser(null);
-          setToken(null);
+          clearSessionState();
         }
       } catch (err) {
         console.warn('Session restoration failed:', err?.message || err);
-        localStorage.removeItem('hiretrack_token');
-        setUser(null);
-        setToken(null);
+        clearSessionState();
       } finally {
         setLoading(false);
       }
@@ -45,9 +60,7 @@ export const AuthProvider = ({ children }) => {
   // Listen for 401 unauthorized interceptor events
   useEffect(() => {
     const handleUnauthorized = () => {
-      setUser(null);
-      setToken(null);
-      localStorage.removeItem('hiretrack_token');
+      clearSessionState();
     };
 
     if (typeof window !== 'undefined') {
@@ -63,9 +76,11 @@ export const AuthProvider = ({ children }) => {
       if (response.success && response.data) {
         const { user: loggedInUser, accessToken } = response.data;
         localStorage.setItem('hiretrack_token', accessToken);
-        setToken(accessToken);
-        setUser(loggedInUser);
-        return loggedInUser;
+        applySessionPayload(response.data, accessToken);
+        return {
+          ...loggedInUser,
+          memberships: Array.isArray(response.data.memberships) ? response.data.memberships : []
+        };
       }
       throw new Error(response.message || 'Login failed');
     } catch (err) {
@@ -82,8 +97,7 @@ export const AuthProvider = ({ children }) => {
       if (response.success && response.data) {
         const { user: registeredUser, accessToken } = response.data;
         localStorage.setItem('hiretrack_token', accessToken);
-        setToken(accessToken);
-        setUser(registeredUser);
+        applySessionPayload(response.data, accessToken);
         return registeredUser;
       }
       throw new Error(response.message || 'Registration failed');
@@ -98,9 +112,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.logout().catch(() => {});
     } finally {
-      localStorage.removeItem('hiretrack_token');
-      setToken(null);
-      setUser(null);
+      clearSessionState();
       setError(null);
     }
   };
@@ -109,15 +121,27 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.getMe();
       if (response.success && response.data) {
-        setUser(response.data.user || response.data);
+        applySessionPayload(response.data);
       }
     } catch (err) {
       console.warn('Refresh user failed:', err);
     }
   };
 
+  const activeMembershipRoles = memberships
+    .filter((m) => m.status === 'active')
+    .map((m) => m.role);
+
+  const hasMembership = (...allowedRoles) => {
+    return activeMembershipRoles.some((r) => allowedRoles.includes(r));
+  };
+
   const value = {
     user,
+    organization,
+    memberships,
+    membershipRoles: activeMembershipRoles,
+    hasMembership,
     token,
     loading,
     error,

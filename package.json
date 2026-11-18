@@ -11,7 +11,9 @@
     "test:client": "npm --prefix client test",
     "test": "npm run test:server && npm run test:client",
     "seed:admin": "npm --prefix server run seed:admin",
+    "seed:org": "npm --prefix server run seed:org",
     "seed:demo": "npm --prefix server run seed:demo",
+    "migrate:v3-org-backfill": "npm --prefix server run migrate:v3-org-backfill --",
     "verify:demo": "npm --prefix server run verify:demo"
   },
   "keywords": ["placement", "recruitment", "mern", "campus-hiring"],
