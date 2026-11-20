@@ -76,3 +76,54 @@ export const uploadResumeMiddleware = (req, res, next) => {
   });
 };
 
+const csvStorage = multer.memoryStorage();
+const csvFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (ext === '.csv' || file.mimetype.includes('csv') || file.mimetype.includes('text/plain') || file.mimetype.includes('excel')) {
+    return cb(null, true);
+  }
+  return cb(
+    ApiError.badRequest(
+      'Invalid file format. Only CSV files are allowed.',
+      [{ field: 'file', message: `Disallowed file type (${ext || file.mimetype}). Must be a .csv file.` }]
+    ),
+    false
+  );
+};
+
+const uploadCsv = multer({
+  storage: csvStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB cap
+    files: 1
+  },
+  fileFilter: csvFilter
+}).single('file');
+
+/**
+ * Middleware handling optional or required CSV multipart upload
+ */
+export const uploadCsvMiddleware = (req, res, next) => {
+  if (!req.is('multipart/form-data')) {
+    return next();
+  }
+
+  uploadCsv(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return next(
+            ApiError.badRequest('File size exceeds allowed limit of 5MB', [
+              { field: 'file', message: 'CSV file exceeds the 5MB maximum limit' }
+            ])
+          );
+        }
+        return next(ApiError.badRequest(err.message, [{ field: 'file', message: err.message }]));
+      }
+      return next(err);
+    }
+    return next();
+  });
+};
+
+

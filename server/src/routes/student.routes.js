@@ -17,6 +17,21 @@ router.patch(
   validate(updateStudentProfileValidator),
   studentController.updateMe
 );
+
+// HireTrack v3 Student Self-Profile endpoints (GET & PATCH /students/me/profile)
+router.get(
+  '/me/profile',
+  protect,
+  authorizeRoles(ROLES.STUDENT),
+  studentController.getMeProfileV3
+);
+router.patch(
+  '/me/profile',
+  protect,
+  authorizeRoles(ROLES.STUDENT),
+  studentController.updateMeProfileV3
+);
+
 router.post(
   '/me/resume',
   protect,

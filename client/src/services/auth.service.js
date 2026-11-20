@@ -20,3 +20,13 @@ export const logout = async () => {
   return response;
 };
 
+export const acceptInvitation = async ({ token, password, confirmPassword }) => {
+  const response = await api.post('/auth/invitation/accept', {
+    token,
+    password,
+    confirmPassword
+  });
+  return response;
+};
+
+

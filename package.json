@@ -14,6 +14,7 @@
     "seed:org": "npm --prefix server run seed:org",
     "seed:demo": "npm --prefix server run seed:demo",
     "migrate:v3-org-backfill": "npm --prefix server run migrate:v3-org-backfill --",
+    "migrate:v3-resumes": "npm --prefix server run migrate:v3-resumes --",
     "verify:demo": "npm --prefix server run verify:demo"
   },
   "keywords": ["placement", "recruitment", "mern", "campus-hiring"],

@@ -12,34 +12,26 @@ import {
   AlertCircle,
   ExternalLink,
   Loader2,
-  Save
+  Save,
+  Lock,
+  ShieldCheck,
+  Award
 } from 'lucide-react';
 import { sanitizeUrl } from '../../utils/security.js';
 
-const BRANCH_OPTIONS = [
-  { value: 'CSE', label: 'Computer Science and Engineering (CSE)' },
-  { value: 'ISE', label: 'Information Science and Engineering (ISE)' },
-  { value: 'ECE', label: 'Electronics and Communication (ECE)' },
-  { value: 'EEE', label: 'Electrical and Electronics (EEE)' },
-  { value: 'MECH', label: 'Mechanical Engineering (MECH)' },
-  { value: 'CIVIL', label: 'Civil Engineering (CIVIL)' },
-  { value: 'AIML', label: 'Artificial Intelligence & ML (AIML)' },
-  { value: 'DATA_SCIENCE', label: 'Data Science (DATA_SCIENCE)' }
-];
-
 export default function StudentProfile() {
   const [profile, setProfile] = useState(null);
+  const [completenessV3, setCompletenessV3] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // Form inputs
+  // Student-editable form inputs
+  const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [bio, setBio] = useState('');
   const [skills, setSkills] = useState('');
   const [cgpa, setCgpa] = useState('');
-  const [branch, setBranch] = useState('CSE');
-  const [graduationYear, setGraduationYear] = useState('2026');
 
   // Resume file
   const [selectedFile, setSelectedFile] = useState(null);
@@ -48,16 +40,32 @@ export default function StudentProfile() {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const response = await studentService.getMyProfile();
-      if (response.success && response.data) {
+      // Use v3 profile endpoint, fall back to v1 if needed
+      let response;
+      try {
+        response = await studentService.getMyProfileV3();
+      } catch {
+        response = await studentService.getMyProfile();
+      }
+
+      if (response && response.success && response.data) {
         const p = response.data.profile || response.data;
         setProfile(p);
+        if (response.data.completenessV3) {
+          setCompletenessV3(response.data.completenessV3);
+        } else if (response.data.completeness) {
+          setCompletenessV3({
+            score: response.data.completeness.percentage || 0,
+            isComplete: response.data.completeness.isComplete,
+            missingFields: response.data.completeness.missingFields || []
+          });
+        }
+
+        setFullName(p.fullName || p.userId?.name || '');
         setPhone(p.phone || '');
         setBio(p.bio || '');
         setSkills(Array.isArray(p.skills) ? p.skills.join(', ') : '');
         setCgpa(String(p.cgpa ?? ''));
-        setBranch(p.branch || 'CSE');
-        setGraduationYear(String(p.graduationYear || '2026'));
       }
     } catch (err) {
       setFeedback({ type: 'error', message: err.message || 'Failed to load profile' });
@@ -77,17 +85,29 @@ export default function StudentProfile() {
 
     try {
       const payload = {
+        fullName: fullName.trim(),
         phone: phone.trim(),
         bio: bio.trim(),
-        skills: skills.split(',').map((s) => s.trim()).filter(Boolean),
-        cgpa: parseFloat(cgpa),
-        branch,
-        graduationYear: parseInt(graduationYear, 10)
+        skills: skills.split(',').map((s) => s.trim()).filter(Boolean)
       };
 
-      const response = await studentService.updateMyProfile(payload);
-      if (response.success) {
-        setProfile(response.data.profile || response.data);
+      if (cgpa !== '' && !isNaN(Number(cgpa))) {
+        payload.cgpa = parseFloat(cgpa);
+      }
+
+      let response;
+      try {
+        response = await studentService.updateMyProfileV3(payload);
+      } catch {
+        response = await studentService.updateMyProfile(payload);
+      }
+
+      if (response && response.success) {
+        const updated = response.data.profile || response.data;
+        setProfile(updated);
+        if (response.data.completenessV3) {
+          setCompletenessV3(response.data.completenessV3);
+        }
         setFeedback({ type: 'success', message: 'Profile updated successfully!' });
       }
     } catch (err) {
@@ -101,7 +121,6 @@ export default function StudentProfile() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check size (5MB) and format (.pdf, .doc, .docx) per UI/UX guidelines
     const validExts = ['.pdf', '.doc', '.docx'];
     const hasValidExt = validExts.some((ext) => file.name.toLowerCase().endsWith(ext));
     if (file.size > 5 * 1024 * 1024 || !hasValidExt) {
@@ -130,13 +149,42 @@ export default function StudentProfile() {
       const response = await studentService.uploadResume(formData);
       if (response.success) {
         setSelectedFile(null);
-        setFeedback({ type: 'success', message: 'Resume uploaded and attached to your profile!' });
+        setFeedback({ type: 'success', message: 'Resume uploaded and securely linked to your profile!' });
         fetchProfile();
       }
     } catch (err) {
       setFeedback({ type: 'error', message: err.message || 'Failed to upload resume.' });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleViewResume = async () => {
+    try {
+      // 1. Try pre-generated signed URL
+      if (profile?.signedResumeUrl) {
+        window.open(profile.signedResumeUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      if (profile?.resume?.signedUrl) {
+        window.open(profile.resume.signedUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      // 2. If fileAssetId exists, fetch fresh signed URL
+      if (profile?.fileAssetId) {
+        const assetId = typeof profile.fileAssetId === 'object' ? profile.fileAssetId._id : profile.fileAssetId;
+        const res = await studentService.getFileSignedUrl(assetId);
+        if (res?.data?.signedUrl) {
+          window.open(res.data.signedUrl, '_blank', 'noopener,noreferrer');
+          return;
+        }
+      }
+      // 3. Fallback to raw resume url if present and valid
+      if (profile?.resume?.url) {
+        window.open(sanitizeUrl(profile.resume.url), '_blank', 'noopener,noreferrer');
+      }
+    } catch (err) {
+      setFeedback({ type: 'error', message: 'Unable to open resume document: ' + (err.message || 'unknown error') });
     }
   };
 
@@ -148,13 +196,26 @@ export default function StudentProfile() {
     );
   }
 
+  const isVerified = profile?.verificationStatus === 'verified' || !!profile?.profileVerifiedAt;
+  const score = completenessV3?.score ?? 0;
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-slate-900">Student Profile & Resume</h2>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Manage your verified campus credentials and resume document for recruiter review
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-2">
+            <h2 className="text-xl font-bold text-slate-900">Student Profile & Resume</h2>
+            {isVerified && (
+              <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Verified by Placement Cell</span>
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Manage your verified campus credentials and placement resume for job drives
+          </p>
+        </div>
       </div>
 
       {feedback.message && (
@@ -174,10 +235,43 @@ export default function StudentProfile() {
         </div>
       )}
 
+      {/* Profile Completeness Card */}
+      <Card title="Profile Completeness">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs font-semibold">
+            <span className="text-slate-700">Placement Readiness Score</span>
+            <span className={score >= 80 ? 'text-emerald-700' : 'text-indigo-700'}>
+              {score}% Complete
+            </span>
+          </div>
+          <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+            <div
+              className={`h-2.5 rounded-full transition-all duration-500 ${
+                score >= 80 ? 'bg-emerald-500' : score >= 50 ? 'bg-indigo-600' : 'bg-amber-500'
+              }`}
+              style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
+            />
+          </div>
+          {completenessV3?.missingFields && completenessV3.missingFields.length > 0 && (
+            <div className="text-xs text-slate-500 flex flex-wrap items-center gap-1.5 pt-1">
+              <span>Missing to reach 100%:</span>
+              {completenessV3.missingFields.map((f, i) => (
+                <span
+                  key={i}
+                  className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium text-[11px]"
+                >
+                  {f}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </Card>
+
       {/* Resume Section */}
-      <Card title="Placement Resume" subtitle="Uploaded resume document is automatically snapshotted on job application">
+      <Card title="Placement Resume" subtitle="Uploaded resume is delivered via private signed URLs to authorized recruiters and staff">
         <div className="space-y-4">
-          {profile?.resume?.url ? (
+          {profile?.resume?.url || profile?.fileAssetId || profile?.signedResumeUrl ? (
             <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-3">
                 <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-700">
@@ -185,29 +279,31 @@ export default function StudentProfile() {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-emerald-900">
-                    {profile.resume.fileName || 'Attached Resume'}
+                    {profile.resume?.fileName || profile.resume?.originalName || 'Placement_Resume.pdf'}
                   </h4>
                   <p className="text-xs text-emerald-700">
-                    Uploaded on {new Date(profile.resume.uploadedAt).toLocaleDateString()} • {(profile.resume.size / 1024).toFixed(1)} KB
+                    {profile.resume?.uploadedAt
+                      ? `Uploaded on ${new Date(profile.resume.uploadedAt).toLocaleDateString()}`
+                      : 'Active Placement Resume'}{' '}
+                    • {profile.resume?.size ? `${(profile.resume.size / 1024).toFixed(1)} KB` : 'PDF'}
                   </p>
                 </div>
               </div>
 
-              <a
-                href={sanitizeUrl(profile.resume.url)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 transition-colors shadow-sm self-start sm:self-auto"
+              <button
+                type="button"
+                onClick={handleViewResume}
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 transition-colors shadow-sm self-start sm:self-auto cursor-pointer"
               >
                 <span>View Document</span>
                 <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              </button>
             </div>
           ) : (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-xs flex items-start space-x-2">
               <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
-                <strong>No Resume on File:</strong> You must upload a resume before you can apply to campus placement drives.
+                <strong>No Resume on File:</strong> You must upload an official resume before applying for campus job opportunities.
               </div>
             </div>
           )}
@@ -240,16 +336,104 @@ export default function StudentProfile() {
         </div>
       </Card>
 
-      {/* Profile Details Form */}
-      <Card title="Academic & Contact Details">
-        <form onSubmit={handleProfileSave} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-              label="Student ID (USN)"
-              id="prof-studentId"
-              value={profile?.studentId || ''}
+      {/* Official Master Academic Records (Read-only / Locked) */}
+      <Card
+        title="Official Academic Credentials"
+        subtitle="Master fields imported and verified by your institution's placement office (immutable by student)"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <div className="flex items-center space-x-1 mb-1">
+              <label className="text-xs font-semibold text-slate-700">Student ID / USN</label>
+              <Lock className="w-3 h-3 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              value={profile?.studentCode || profile?.studentId || ''}
               disabled
-              helperText="Student USN is officially registered and immutable"
+              className="w-full text-xs bg-slate-50 text-slate-600 border border-slate-200 rounded-lg p-2.5 font-mono cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center space-x-1 mb-1">
+              <label className="text-xs font-semibold text-slate-700">Degree</label>
+              <Lock className="w-3 h-3 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              value={profile?.degree || 'B.Tech'}
+              disabled
+              className="w-full text-xs bg-slate-50 text-slate-600 border border-slate-200 rounded-lg p-2.5 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center space-x-1 mb-1">
+              <label className="text-xs font-semibold text-slate-700">Cohort / Batch</label>
+              <Lock className="w-3 h-3 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              value={profile?.cohort || profile?.course || '2022-2026'}
+              disabled
+              className="w-full text-xs bg-slate-50 text-slate-600 border border-slate-200 rounded-lg p-2.5 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center space-x-1 mb-1">
+              <label className="text-xs font-semibold text-slate-700">Branch / Major</label>
+              <Lock className="w-3 h-3 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              value={profile?.branch || ''}
+              disabled
+              className="w-full text-xs bg-slate-50 text-slate-600 border border-slate-200 rounded-lg p-2.5 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center space-x-1 mb-1">
+              <label className="text-xs font-semibold text-slate-700">Graduation Year</label>
+              <Lock className="w-3 h-3 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              value={profile?.graduationYear || ''}
+              disabled
+              className="w-full text-xs bg-slate-50 text-slate-600 border border-slate-200 rounded-lg p-2.5 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center space-x-1 mb-1">
+              <label className="text-xs font-semibold text-slate-700">Verification Status</label>
+            </div>
+            <div className="flex items-center h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700">
+              {isVerified ? (
+                <span className="text-emerald-700 flex items-center space-x-1">
+                  <ShieldCheck className="w-4 h-4 mr-1" /> Verified
+                </span>
+              ) : (
+                <span className="text-amber-700">Pending Staff Review</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Editable Student Profile Form */}
+      <Card title="Personal & Contact Details" subtitle="Student self-managed details">
+        <form onSubmit={handleProfileSave} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <FormField
+              label="Full Name"
+              id="prof-fullName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Your full name"
             />
 
             <FormField
@@ -258,28 +442,6 @@ export default function StudentProfile() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+91 9876543210"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FormField
-              label="Branch"
-              id="prof-branch"
-              type="select"
-              value={branch}
-              onChange={(e) => setBranch(e.target.value)}
-              options={BRANCH_OPTIONS}
-              required
-            />
-
-            <FormField
-              label="Graduation Year"
-              id="prof-gradYear"
-              type="select"
-              value={graduationYear}
-              onChange={(e) => setGraduationYear(e.target.value)}
-              options={[2024, 2025, 2026, 2027, 2028].map((y) => ({ value: y, label: String(y) }))}
-              required
             />
 
             <FormField
@@ -291,7 +453,8 @@ export default function StudentProfile() {
               step="0.01"
               value={cgpa}
               onChange={(e) => setCgpa(e.target.value)}
-              required
+              disabled={isVerified}
+              helperText={isVerified ? 'Locked after placement cell verification' : 'Cumulative Grade Point Average'}
             />
           </div>
 
@@ -323,4 +486,3 @@ export default function StudentProfile() {
     </div>
   );
 }
-

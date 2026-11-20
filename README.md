@@ -119,6 +119,8 @@ All primary commands can be executed directly from the root workspace:
 | `npm run seed:demo` | Seeds full demo ecosystem (3 roles, jobs, applications, interviews, default org + memberships) |
 | `npm run migrate:v3-org-backfill -- --dry-run` | Previews v3 org & membership backfill counts without modifying DB (zero PII logged) |
 | `npm run migrate:v3-org-backfill` | Idempotently backfills default `organizationId` onto Users & StudentProfiles and creates `STUDENT`/`ORG_ADMIN` memberships |
+| `npm run migrate:v3-resumes -- --dry-run` | Previews v3 resume to FileAsset migration counts without modifying DB (zero PII logged) |
+| `npm run migrate:v3-resumes` | Idempotently migrates existing student resume metadata into private `FileAsset` records |
 | `npm run verify:demo` | Executes programmatic 8-step demo script with step-by-step assertions |
 
 ---

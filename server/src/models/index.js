@@ -8,3 +8,4 @@ export { AuditLog } from './auditLog.model.js';
 export { Notification } from './notification.model.js';
 export { Organization } from './organization.model.js';
 export { OrganizationMembership } from './organizationMembership.model.js';
+export { FileAsset } from './fileAsset.model.js';

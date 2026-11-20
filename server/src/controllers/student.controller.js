@@ -38,3 +38,21 @@ export const updateById = asyncHandler(async (req, res) => {
   });
 });
 
+export const getMeProfileV3 = asyncHandler(async (req, res) => {
+  const result = await studentService.getStudentProfileV3(req.user._id);
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: 'Student profile retrieved successfully',
+    data: result
+  });
+});
+
+export const updateMeProfileV3 = asyncHandler(async (req, res) => {
+  const result = await studentService.updateStudentProfileV3(req.user._id, req.body);
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: 'Student profile updated successfully',
+    data: result
+  });
+});
+

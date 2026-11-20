@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import {
   User,
   StudentProfile,
@@ -16,7 +17,8 @@ import {
   RECRUITER_APPROVAL_STATUSES,
   MEMBERSHIP_ROLES,
   MEMBERSHIP_STATUSES,
-  ORGANIZATION_STATUSES
+  ORGANIZATION_STATUSES,
+  ERROR_CODES
 } from '../utils/constants.js';
 
 /**
@@ -173,7 +175,8 @@ export const registerUser = async (data) => {
     profile: profile ? profile.toJSON() : null,
     organization: membershipContext.organization,
     memberships: membershipContext.memberships,
-    accessToken
+    accessToken,
+    token: accessToken
   };
 };
 
@@ -219,7 +222,54 @@ export const loginUser = async ({ email, password }) => {
     profile: profile ? profile.toJSON() : null,
     organization: membershipContext.organization,
     memberships: membershipContext.memberships,
-    accessToken
+    accessToken,
+    token: accessToken
+  };
+};
+
+export const acceptInvitation = async ({ token, password }) => {
+  if (!token || typeof token !== 'string') {
+    throw ApiError.badRequest('Invitation token is required', [], ERROR_CODES.VALIDATION_ERROR);
+  }
+
+  const tokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');
+
+  const user = await User.findOne({
+    invitationTokenHash: tokenHash,
+    invitationExpiresAt: { $gt: new Date() }
+  }).select('+invitationTokenHash');
+
+  if (!user) {
+    throw ApiError.badRequest(
+      'Invalid or expired invitation token. Please request a new invitation from your institution administrator.',
+      [],
+      ERROR_CODES.VALIDATION_ERROR
+    );
+  }
+
+  const saltRounds = 12;
+  user.passwordHash = await bcrypt.hash(password, saltRounds);
+  user.accountStatus = USER_STATUSES.ACTIVE;
+  user.invitationTokenHash = null;
+  user.invitationExpiresAt = null;
+  user.lastLoginAt = new Date();
+  await user.save();
+
+  let profile = null;
+  if (user.role === ROLES.STUDENT) {
+    profile = await StudentProfile.findOne({ userId: user._id });
+  }
+
+  const accessToken = signToken({ id: user._id, role: user.role });
+  const membershipContext = await getUserMembershipContext(user);
+
+  return {
+    user: user.toJSON(),
+    profile: profile ? profile.toJSON() : null,
+    organization: membershipContext.organization,
+    memberships: membershipContext.memberships,
+    accessToken,
+    token: accessToken
   };
 };
 

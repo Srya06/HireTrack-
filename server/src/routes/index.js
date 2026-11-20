@@ -12,6 +12,7 @@ import applicationRoutes from './application.routes.js';
 import interviewRoutes from './interview.routes.js';
 import notificationRoutes from './notification.routes.js';
 import uploadRoutes from './upload.routes.js';
+import fileRoutes from './file.routes.js';
 import { protect } from '../middleware/auth.middleware.js';
 import * as authController from '../controllers/auth.controller.js';
 
@@ -31,5 +32,6 @@ apiRouter.use('/applications', applicationRoutes);
 apiRouter.use('/interviews', interviewRoutes);
 apiRouter.use('/notifications', notificationRoutes);
 apiRouter.use('/uploads', uploadRoutes);
+apiRouter.use('/files', fileRoutes);
 
 export default apiRouter;

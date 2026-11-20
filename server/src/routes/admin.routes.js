@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import * as adminController from '../controllers/admin.controller.js';
 import { protect, authorizeRoles } from '../middleware/auth.middleware.js';
+import { attachOrganization, authorizeMemberships } from '../middleware/org.middleware.js';
+import { uploadCsvMiddleware } from '../middleware/upload.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { validateObjectId } from '../validators/common.validator.js';
-import { ROLES } from '../utils/constants.js';
+import { ROLES, MEMBERSHIP_ROLES } from '../utils/constants.js';
 import { sendSuccess } from '../utils/response.js';
 
 const router = Router();
@@ -55,6 +57,41 @@ router.patch(
   authorizeRoles(ROLES.ADMIN),
   validate(validateObjectId('id')),
   adminController.updateJobStatus
+);
+
+// --- Chunk V2: Student Administration & CSV Import ---
+router.get(
+  '/students/import/template',
+  protect,
+  attachOrganization,
+  authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN),
+  adminController.getImportTemplate
+);
+
+router.post(
+  '/students/import',
+  protect,
+  attachOrganization,
+  authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN),
+  uploadCsvMiddleware,
+  adminController.importStudents
+);
+
+router.get(
+  '/students',
+  protect,
+  attachOrganization,
+  authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN, MEMBERSHIP_ROLES.PLACEMENT_COORDINATOR),
+  adminController.listStudents
+);
+
+router.patch(
+  '/students/:id',
+  protect,
+  attachOrganization,
+  authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN, MEMBERSHIP_ROLES.PLACEMENT_COORDINATOR),
+  validate(validateObjectId('id')),
+  adminController.updateStudentByStaff
 );
 
 export default router;

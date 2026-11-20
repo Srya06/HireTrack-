@@ -2,6 +2,7 @@
 export { default as Landing } from './public/Landing.jsx';
 export { default as Login } from './public/Login.jsx';
 export { default as Register } from './public/Register.jsx';
+export { default as AcceptInvitation } from './public/AcceptInvitation.jsx';
 export { default as AccessDenied } from './public/AccessDenied.jsx';
 export { default as NotFound } from './public/NotFound.jsx';
 
@@ -22,6 +23,7 @@ export { default as RecruiterProfile } from './recruiter/RecruiterProfile.jsx';
 
 // Admin
 export { default as AdminDashboard } from './admin/AdminDashboard.jsx';
+export { default as StudentDirectory } from './admin/StudentDirectory.jsx';
 export { default as PendingRecruiters } from './admin/PendingRecruiters.jsx';
 export { default as UserManagement } from './admin/UserManagement.jsx';
 export { default as JobModeration } from './admin/JobModeration.jsx';

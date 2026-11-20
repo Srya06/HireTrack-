@@ -1,6 +1,9 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess } from '../utils/response.js';
 import * as adminService from '../services/admin.service.js';
+import * as studentService from '../services/student.service.js';
+import * as studentImportService from '../services/studentImport.service.js';
+import { CSV_TEMPLATE } from '../services/studentImport.service.js';
 
 export const getOverview = asyncHandler(async (req, res) => {
   const result = await adminService.getOverviewMetrics();
@@ -73,6 +76,77 @@ export const updateJobStatus = asyncHandler(async (req, res) => {
   return sendSuccess(res, {
     statusCode: 200,
     message: `Job status updated to ${status}`,
+    data: result
+  });
+});
+
+export const getImportTemplate = asyncHandler(async (req, res) => {
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="student_import_template.csv"');
+  return res.status(200).send(CSV_TEMPLATE);
+});
+
+export const importStudents = asyncHandler(async (req, res) => {
+  let csvText = '';
+  if (req.file && req.file.buffer) {
+    csvText = req.file.buffer.toString('utf8');
+  } else if (req.body?.csvData) {
+    csvText = req.body.csvData;
+  } else if (req.body?.csvText) {
+    csvText = req.body.csvText;
+  }
+
+  const dryRunParam = req.query.dryRun !== undefined ? req.query.dryRun : req.body?.dryRun;
+  const isDryRun = dryRunParam === 'true' || dryRunParam === true || dryRunParam === '1';
+
+  const result = await studentImportService.processStudentImport(
+    req.organizationId,
+    req.user,
+    csvText,
+    { dryRun: isDryRun }
+  );
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: isDryRun
+      ? 'Student CSV analysis report generated'
+      : 'Student CSV batch import committed successfully',
+    data: result
+  });
+});
+
+export const listStudents = asyncHandler(async (req, res) => {
+  const { page, limit, q, branch, degree, cohort, verificationStatus, accountStatus } = req.query;
+  const result = await studentService.listStudentsAdmin(req.organizationId, {
+    page,
+    limit,
+    q,
+    branch,
+    degree,
+    cohort,
+    verificationStatus,
+    accountStatus
+  });
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: 'Students retrieved successfully',
+    data: result.students,
+    pagination: result.pagination
+  });
+});
+
+export const updateStudentByStaff = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const result = await studentService.updateStudentByStaff(
+    req.organizationId,
+    req.user,
+    id,
+    req.body
+  );
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: 'Student master profile updated successfully',
     data: result
   });
 });

@@ -8,6 +8,13 @@ export const USER_STATUSES = Object.freeze({
   ACTIVE: 'active',
   PENDING: 'pending',
   SUSPENDED: 'suspended',
+  REJECTED: 'rejected',
+  INVITED: 'invited'
+});
+
+export const VERIFICATION_STATUSES = Object.freeze({
+  UNVERIFIED: 'unverified',
+  VERIFIED: 'verified',
   REJECTED: 'rejected'
 });
 

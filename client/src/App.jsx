@@ -8,6 +8,7 @@ import {
   Landing,
   Login,
   Register,
+  AcceptInvitation,
   AccessDenied,
   NotFound,
   StudentDashboard,
@@ -22,6 +23,7 @@ import {
   JobApplicants,
   RecruiterProfile,
   AdminDashboard,
+  StudentDirectory,
   PendingRecruiters,
   UserManagement,
   JobModeration,
@@ -40,6 +42,8 @@ export default function App() {
             <Route index element={<Landing />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
+            <Route path="invitation/accept" element={<AcceptInvitation />} />
+            <Route path="set-password" element={<AcceptInvitation />} />
             <Route path="access-denied" element={<AccessDenied />} />
           </Route>
 
@@ -105,6 +109,14 @@ export default function App() {
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route
+              path="students"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
+                  <StudentDirectory />
+                </MembershipRoute>
+              }
+            />
             <Route
               path="staff"
               element={

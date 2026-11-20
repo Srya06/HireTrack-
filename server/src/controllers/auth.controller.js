@@ -42,3 +42,12 @@ export const logout = asyncHandler(async (req, res) => {
   });
 });
 
+export const acceptInvitation = asyncHandler(async (req, res) => {
+  const result = await authService.acceptInvitation(req.body);
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: 'Account activated successfully. Password has been set.',
+    data: result
+  });
+});
+

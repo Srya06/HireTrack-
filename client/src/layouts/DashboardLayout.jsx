@@ -18,7 +18,8 @@ import {
   MessageSquare,
   Calendar,
   TrendingUp,
-  Award
+  Award,
+  GraduationCap
 } from 'lucide-react';
 import StatusBadge from '../components/StatusBadge.jsx';
 import NotificationBell from '../components/NotificationBell.jsx';
@@ -105,6 +106,9 @@ export default function DashboardLayout() {
 
   const adminNav = [
     { name: 'Dashboard Overview', to: '/admin/dashboard', icon: LayoutDashboard },
+    ...(hasOrgAdmin || hasPlacementCoordinator
+      ? [{ name: 'Students Directory', to: '/admin/students', icon: GraduationCap }]
+      : []),
     ...(hasOrgAdmin ? [{ name: 'Staff & Roles', to: '/admin/staff', icon: ShieldCheck }] : []),
     ...(flags.LEGACY_RECRUITER_FLOW && hasOrgAdmin
       ? [{ name: 'Pending Recruiters', to: '/admin/recruiters', icon: Building2 }]

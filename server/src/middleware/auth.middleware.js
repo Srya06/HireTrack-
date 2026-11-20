@@ -40,6 +40,13 @@ export const protect = async (req, res, next) => {
     if (user.accountStatus === USER_STATUSES.REJECTED) {
       return next(ApiError.forbidden('Account registration was rejected.'));
     }
+    if (user.accountStatus === USER_STATUSES.INVITED) {
+      return next(
+        ApiError.forbidden(
+          'Account invitation has not been activated. Please set your password using your invitation link.'
+        )
+      );
+    }
 
     // Attach profile if student or recruiter
     let profile = null;

@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: [true, 'Password hash is required'],
+      default: null,
       select: false // Excluded by default from queries
     },
     role: {
@@ -40,13 +40,24 @@ const userSchema = new mongoose.Schema(
           USER_STATUSES.ACTIVE,
           USER_STATUSES.PENDING,
           USER_STATUSES.SUSPENDED,
-          USER_STATUSES.REJECTED
+          USER_STATUSES.REJECTED,
+          USER_STATUSES.INVITED
         ],
         message: '{VALUE} is not a valid account status'
       },
       default: function () {
         return this.role === ROLES.RECRUITER ? USER_STATUSES.PENDING : USER_STATUSES.ACTIVE;
       }
+    },
+    invitationTokenHash: {
+      type: String,
+      default: null,
+      select: false,
+      index: true
+    },
+    invitationExpiresAt: {
+      type: Date,
+      default: null
     },
     lastLoginAt: {
       type: Date,

@@ -11,6 +11,7 @@
     "seed:org": "node src/scripts/seedDefaultOrg.js",
     "seed:demo": "node src/scripts/seedDemo.js",
     "migrate:v3-org-backfill": "node src/scripts/migrateOrgBackfill.js",
+    "migrate:v3-resumes": "node src/scripts/migrateResumesToFileAssets.js",
     "verify:demo": "cross-env NODE_ENV=test node src/scripts/verifyDemoScript.js",
     "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit"
   },
