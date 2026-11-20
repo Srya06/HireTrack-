@@ -9,7 +9,7 @@
  */
 export const sendSuccess = (
   res,
-  { statusCode = 200, message = 'Success', data = {}, pagination = undefined } = {}
+  { statusCode = 200, message = 'Success', data = {}, pagination = undefined, metadata = undefined } = {}
 ) => {
   const payload = {
     success: true,
@@ -19,6 +19,10 @@ export const sendSuccess = (
 
   if (pagination) {
     payload.pagination = pagination;
+  }
+
+  if (metadata) {
+    payload.metadata = metadata;
   }
 
   return res.status(statusCode).json(payload);

@@ -85,3 +85,4 @@ export const updateOpportunityValidator = [
     .isArray()
     .withMessage('Criteria must be an array')
 ];
+

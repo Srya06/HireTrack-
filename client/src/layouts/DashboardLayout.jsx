@@ -77,7 +77,10 @@ export default function DashboardLayout() {
   const studentNav = [
     { name: 'Dashboard', to: '/student/dashboard', icon: LayoutDashboard },
     ...(flags.V3_OPPORTUNITIES_ENABLED
-      ? [{ name: 'Opportunities', to: '/student/opportunities', icon: Briefcase }]
+      ? [
+          { name: 'Opportunities', to: '/student/opportunities', icon: Briefcase },
+          { name: 'Eligibility', to: '/student/eligibility', icon: ShieldCheck }
+        ]
       : [{ name: 'Browse Jobs', to: '/student/jobs', icon: Briefcase }]),
     { name: 'My Applications', to: '/student/applications', icon: FileText },
     ...(flags.V3_MOCK_TESTS_ENABLED

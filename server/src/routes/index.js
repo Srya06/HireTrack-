@@ -15,6 +15,11 @@ import uploadRoutes from './upload.routes.js';
 import fileRoutes from './file.routes.js';
 import opportunityRoutes from './opportunity.routes.js';
 import opportunityAdminRoutes from './opportunityAdmin.routes.js';
+import * as eligibilityController from '../controllers/eligibility.controller.js';
+import { attachOrganization, authorizeMemberships } from '../middleware/org.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { validateObjectId } from '../validators/common.validator.js';
+import { MEMBERSHIP_ROLES } from '../utils/constants.js';
 import { protect } from '../middleware/auth.middleware.js';
 import * as authController from '../controllers/auth.controller.js';
 
@@ -26,6 +31,14 @@ apiRouter.get('/me', protect, authController.getMe);
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/organizations', organizationRoutes);
 apiRouter.use('/admin/staff', staffRoutes);
+apiRouter.post(
+  '/admin/eligibility/:evaluationId/override',
+  protect,
+  attachOrganization,
+  authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN, MEMBERSHIP_ROLES.PLACEMENT_COORDINATOR),
+  validate(validateObjectId('evaluationId')),
+  eligibilityController.overrideEligibilityAdmin
+);
 apiRouter.use('/admin/opportunities', opportunityAdminRoutes);
 apiRouter.use('/admin', adminRoutes);
 apiRouter.use('/opportunities', opportunityRoutes);

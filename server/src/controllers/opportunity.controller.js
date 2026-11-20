@@ -128,3 +128,4 @@ export const getByIdStudent = asyncHandler(async (req, res) => {
     data: result
   });
 });
+

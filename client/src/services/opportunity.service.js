@@ -48,3 +48,32 @@ export const getStudentOpportunityById = async (id) => {
   const response = await api.get(`/opportunities/${id}`);
   return response;
 };
+
+// --- Chunk V4 Eligibility Endpoints ---
+
+export const getOpportunityEligibility = async (id) => {
+  const response = await api.get(`/opportunities/${id}/eligibility`);
+  return response;
+};
+
+export const evaluateOpportunityEligibility = async (id) => {
+  const response = await api.post(`/opportunities/${id}/eligibility/evaluate`);
+  return response;
+};
+
+export const getMyEligibilityHistory = async (params = {}) => {
+  const response = await api.get('/opportunities/me/eligibility', { params });
+  return response;
+};
+
+export const getOpportunityEligibilityCohort = async (id, params = {}) => {
+  const response = await api.get(`/admin/opportunities/${id}/eligibility-results`, { params });
+  return response;
+};
+
+export const overrideEligibility = async (evaluationId, data) => {
+  const response = await api.post(`/admin/eligibility/${evaluationId}/override`, data);
+  return response;
+};
+
+

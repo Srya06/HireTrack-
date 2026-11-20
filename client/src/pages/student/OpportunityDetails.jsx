@@ -14,7 +14,11 @@ import {
   ShieldCheck,
   Star,
   FileText,
-  Globe
+  Globe,
+  RotateCw,
+  HelpCircle,
+  XCircle,
+  Info
 } from 'lucide-react';
 import { opportunityService } from '../../services/index.js';
 
@@ -25,25 +29,52 @@ export default function OpportunityDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchDetails = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const res = await opportunityService.getStudentOpportunityById(id);
-        if (res?.data?.success || res?.success) {
-          setOpportunity(res.data?.data || res.data);
-        } else {
-          setError('Failed to load opportunity details');
-        }
-      } catch (err) {
-        setError(err?.response?.data?.message || err.message || 'Job opportunity not found or not published');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Eligibility Evaluation State
+  const [eligibility, setEligibility] = useState(null);
+  const [evaluating, setEvaluating] = useState(false);
+  const [evalError, setEvalError] = useState('');
 
+  const fetchDetails = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await opportunityService.getStudentOpportunityById(id);
+      if (res?.data?.success || res?.success) {
+        setOpportunity(res.data?.data || res.data);
+      } else {
+        setError('Failed to load opportunity details');
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message || 'Job opportunity not found or not published');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEligibility = async (force = false) => {
+    setEvaluating(true);
+    setEvalError('');
+    try {
+      let res;
+      if (force) {
+        res = await opportunityService.evaluateOpportunityEligibility(id);
+      } else {
+        res = await opportunityService.getOpportunityEligibility(id);
+      }
+
+      if (res?.data?.success || res?.success) {
+        setEligibility(res.data?.data || res.data);
+      }
+    } catch (err) {
+      setEvalError(err?.response?.data?.message || 'Could not evaluate eligibility');
+    } finally {
+      setEvaluating(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDetails();
+    fetchEligibility(false);
   }, [id]);
 
   if (loading) {
@@ -81,6 +112,39 @@ export default function OpportunityDetails() {
     opportunity.effectiveStatus === 'EXPIRED' ||
     opportunity.status === 'CLOSED' ||
     opportunity.status === 'EXPIRED';
+
+  const effectiveEligibilityStatus =
+    eligibility?.override?.isOverridden
+      ? eligibility.override.overrideStatus
+      : eligibility?.status;
+
+  const renderEligibilityStatusBadge = () => {
+    switch (effectiveEligibilityStatus) {
+      case 'LIKELY_ELIGIBLE':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+            Likely Eligible
+          </span>
+        );
+      case 'POTENTIALLY_ELIGIBLE':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+            <HelpCircle className="w-3.5 h-3.5 mr-1.5" />
+            Potentially Eligible (Incomplete Profile)
+          </span>
+        );
+      case 'DOES_NOT_MEET':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
+            <XCircle className="w-3.5 h-3.5 mr-1.5" />
+            Does Not Meet Criteria
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -132,7 +196,7 @@ export default function OpportunityDetails() {
             </div>
           </div>
 
-          {/* Prominent Application Action Box */}
+          {/* Prominent Application Action Box (ALWAYS VISIBLE; disabled only if closed/expired) */}
           <div className="flex flex-col items-end gap-2">
             {isClosedOrExpired ? (
               <button
@@ -176,6 +240,134 @@ export default function OpportunityDetails() {
             </span>
           </div>
         )}
+      </div>
+
+      {/* Advisory Eligibility Assessment Panel (Chunk V4) */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-3">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-indigo-600" />
+              Advisory Eligibility Checklist
+            </h3>
+            {eligibility && renderEligibilityStatusBadge()}
+          </div>
+
+          <button
+            type="button"
+            disabled={evaluating}
+            onClick={() => fetchEligibility(true)}
+            className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+          >
+            <RotateCw className={`w-3.5 h-3.5 mr-1.5 ${evaluating ? 'animate-spin' : ''}`} />
+            {evaluating ? 'Evaluating...' : 'Re-check My Eligibility'}
+          </button>
+        </div>
+
+        {/* Staff Override Notice */}
+        {eligibility?.override?.isOverridden && (
+          <div className="p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 space-y-1">
+            <div className="font-bold flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-purple-600" />
+              Placement Office Staff Determination
+            </div>
+            <p className="text-purple-800">
+              Staff reviewed and updated this eligibility to <strong>{eligibility.override.overrideStatus}</strong>.
+            </p>
+            {eligibility.override.reason && (
+              <p className="italic text-purple-700">
+                Reason: "{eligibility.override.reason}"
+              </p>
+            )}
+          </div>
+        )}
+
+        {evalError && (
+          <div className="p-3 bg-rose-50 border border-rose-200 text-xs text-rose-700 rounded-lg">
+            {evalError}
+          </div>
+        )}
+
+        {/* Checklist Rows */}
+        {eligibility?.snapshot?.perCriterion?.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 text-xs text-left">
+              <thead>
+                <tr className="text-slate-500 font-semibold uppercase tracking-wider bg-slate-50">
+                  <th className="px-3 py-2.5">Requirement</th>
+                  <th className="px-3 py-2.5">Your Profile Value</th>
+                  <th className="px-3 py-2.5">Result</th>
+                  <th className="px-3 py-2.5">Explanation</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {eligibility.snapshot.perCriterion.map((item, idx) => {
+                  let badge = null;
+                  if (item.result === 'PASS') {
+                    badge = (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <CheckCircle2 className="w-3 h-3 mr-1" />
+                        Pass
+                      </span>
+                    );
+                  } else if (item.result === 'FAIL') {
+                    badge = (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                        <XCircle className="w-3 h-3 mr-1" />
+                        Fail
+                      </span>
+                    );
+                  } else {
+                    badge = (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                        <HelpCircle className="w-3 h-3 mr-1" />
+                        Missing Data
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <tr key={idx} className="hover:bg-slate-50/75">
+                      <td className="px-3 py-2.5 font-medium text-slate-900">
+                        <div>{item.label}</div>
+                        <div className="text-[10px] text-slate-400">
+                          {item.isHardRequirement !== false ? 'Mandatory Hard Rule' : 'Preferred (Soft)'}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-slate-700">
+                        {item.studentValue !== null && item.studentValue !== undefined && item.studentValue !== ''
+                          ? Array.isArray(item.studentValue)
+                            ? item.studentValue.join(', ')
+                            : String(item.studentValue)
+                          : <span className="text-slate-400 italic">Not in profile</span>}
+                      </td>
+                      <td className="px-3 py-2.5">{badge}</td>
+                      <td className="px-3 py-2.5 text-slate-600">{item.explanation}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-xs text-slate-500 italic py-2">
+            No specific criteria rules set for this opportunity. All enrolled students are eligible.
+          </p>
+        )}
+
+        {/* Advisory Disclaimer Notice */}
+        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
+          <Info className="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0" />
+          <div className="space-y-1">
+            <p className="font-semibold text-slate-800">
+              {eligibility?.snapshot?.disclaimer ||
+                'Advisory placement eligibility based on candidate profile. Final candidate qualification is subject to employer review.'}
+            </p>
+            <p className="text-[11px] text-slate-500">
+              This advisory evaluation is provided to help you assess your fit. It does not block or prevent you from submitting your application directly to the employer.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Application Instructions (if present) */}
@@ -260,7 +452,7 @@ export default function OpportunityDetails() {
         </div>
       </div>
 
-      {/* Sticky Bottom CTA for Mobile / Quick Action */}
+      {/* Sticky Bottom CTA */}
       <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm flex items-center justify-between">
         <div className="text-xs text-slate-600">
           Ready to apply for <strong>{opportunity.jobTitle}</strong>?

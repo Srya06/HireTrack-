@@ -16,6 +16,7 @@ import {
   JobDetails,
   OpportunitiesBrowse,
   OpportunityDetails,
+  StudentEligibility,
   MyApplications,
   ApplicationDetails,
   StudentProfile,
@@ -67,6 +68,7 @@ export default function App() {
             <Route path="jobs/:jobId" element={<JobDetails />} />
             <Route path="opportunities" element={<OpportunitiesBrowse />} />
             <Route path="opportunities/:id" element={<OpportunityDetails />} />
+            <Route path="eligibility" element={<StudentEligibility />} />
             <Route path="applications" element={<MyApplications />} />
             <Route path="applications/:applicationId" element={<ApplicationDetails />} />
             <Route path="profile" element={<StudentProfile />} />

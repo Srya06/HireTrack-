@@ -198,3 +198,4 @@ jobOpportunitySchema.methods.getDestinationDomain = function () {
 };
 
 export const JobOpportunity = mongoose.model('JobOpportunity', jobOpportunitySchema);
+

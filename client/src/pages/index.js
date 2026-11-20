@@ -12,6 +12,7 @@ export { default as JobsBrowse } from './student/JobsBrowse.jsx';
 export { default as JobDetails } from './student/JobDetails.jsx';
 export { default as OpportunitiesBrowse } from './student/OpportunitiesBrowse.jsx';
 export { default as OpportunityDetails } from './student/OpportunityDetails.jsx';
+export { default as StudentEligibility } from './student/StudentEligibility.jsx';
 export { default as MyApplications } from './student/MyApplications.jsx';
 export { default as ApplicationDetails } from './student/ApplicationDetails.jsx';
 export { default as StudentProfile } from './student/StudentProfile.jsx';

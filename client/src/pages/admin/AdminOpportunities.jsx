@@ -18,7 +18,9 @@ import {
   MapPin,
   Calendar,
   Building,
-  DollarSign
+  DollarSign,
+  ShieldCheck,
+  Users
 } from 'lucide-react';
 import { opportunityService } from '../../services/index.js';
 
@@ -100,6 +102,69 @@ export default function AdminOpportunities() {
     isHardRequirement: true,
     displayLabel: ''
   });
+
+  // Cohort Modal & Override Dialog State (Chunk V4)
+  const [cohortModalOpp, setCohortModalOpp] = useState(null);
+  const [cohortEvaluations, setCohortEvaluations] = useState([]);
+  const [cohortLoading, setCohortLoading] = useState(false);
+  const [cohortError, setCohortError] = useState('');
+
+  // Override Dialog
+  const [overrideTargetEval, setOverrideTargetEval] = useState(null);
+  const [overrideStatus, setOverrideStatus] = useState('LIKELY_ELIGIBLE');
+  const [overrideReason, setOverrideReason] = useState('');
+  const [overrideSubmitting, setOverrideSubmitting] = useState(false);
+  const [overrideError, setOverrideError] = useState('');
+
+  const openCohortModal = async (opp) => {
+    setCohortModalOpp(opp);
+    setCohortLoading(true);
+    setCohortError('');
+    try {
+      const res = await opportunityService.getOpportunityEligibilityCohort(opp._id);
+      if (res?.data?.success || res?.success) {
+        setCohortEvaluations(res.data?.data || res.data || []);
+      }
+    } catch (err) {
+      setCohortError(err?.response?.data?.message || 'Failed to load cohort evaluations');
+    } finally {
+      setCohortLoading(false);
+    }
+  };
+
+  const openOverrideDialog = (evaluation) => {
+    setOverrideTargetEval(evaluation);
+    setOverrideStatus(evaluation.override?.isOverridden ? evaluation.override.overrideStatus : 'LIKELY_ELIGIBLE');
+    setOverrideReason(evaluation.override?.reason || '');
+    setOverrideError('');
+  };
+
+  const handleOverrideSubmit = async (e) => {
+    e.preventDefault();
+    if (!overrideReason.trim()) {
+      setOverrideError('Audit justification reason is required');
+      return;
+    }
+    setOverrideSubmitting(true);
+    setOverrideError('');
+    try {
+      await opportunityService.overrideEligibility(overrideTargetEval._id, {
+        overrideStatus,
+        reason: overrideReason
+      });
+      setSuccessMsg(`Successfully overridden eligibility status for candidate.`);
+      setOverrideTargetEval(null);
+      // Refresh cohort
+      if (cohortModalOpp) {
+        const res = await opportunityService.getOpportunityEligibilityCohort(cohortModalOpp._id);
+        setCohortEvaluations(res.data?.data || res.data || []);
+      }
+    } catch (err) {
+      setOverrideError(err?.response?.data?.message || 'Failed to override eligibility');
+    } finally {
+      setOverrideSubmitting(false);
+    }
+  };
 
   const fetchOpportunities = async (page = 1) => {
     setLoading(true);
@@ -488,6 +553,14 @@ export default function AdminOpportunities() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="inline-flex items-center gap-1.5">
+                        <button
+                          onClick={() => openCohortModal(opp)}
+                          title="View Eligibility Cohort"
+                          className="p-1.5 text-slate-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        >
+                          <Users className="w-4 h-4" />
+                        </button>
+
                         <button
                           onClick={() => openEditModal(opp)}
                           title="Edit Opportunity"
@@ -1000,6 +1073,202 @@ export default function AdminOpportunities() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Cohort Eligibility Modal */}
+      {cohortModalOpp && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in-50 duration-200">
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-indigo-600" />
+                  Eligibility Cohort: {cohortModalOpp.jobTitle}
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {cohortModalOpp.companyName} • Evaluated under criteria version v{cohortModalOpp.criteriaVersion || 1}
+                </p>
+              </div>
+              <button
+                onClick={() => setCohortModalOpp(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1">
+              {cohortLoading ? (
+                <div className="py-12 text-center text-slate-500 text-xs">
+                  <div className="inline-block animate-spin w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full mb-2" />
+                  <p>Loading cohort eligibility evaluations...</p>
+                </div>
+              ) : cohortError ? (
+                <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg">
+                  {cohortError}
+                </div>
+              ) : cohortEvaluations.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-xs">
+                  No candidate evaluations recorded yet for this opportunity.
+                </div>
+              ) : (
+                <div className="border border-slate-200 rounded-xl overflow-hidden">
+                  <table className="min-w-full divide-y divide-slate-200 text-xs text-left">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold">
+                      <tr>
+                        <th className="px-4 py-2.5">Candidate</th>
+                        <th className="px-4 py-2.5">Academic Profile</th>
+                        <th className="px-4 py-2.5">Advisory Status</th>
+                        <th className="px-4 py-2.5">Criteria Fit</th>
+                        <th className="px-4 py-2.5 text-right">Staff Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {cohortEvaluations.map((item) => {
+                        const studentUser = item.studentId || {};
+                        const studentProfile = item.studentProfileId || {};
+                        const isOverridden = item.override?.isOverridden;
+                        const effectiveStatus = isOverridden
+                          ? item.override.overrideStatus
+                          : item.status;
+
+                        return (
+                          <tr key={item._id} className="hover:bg-slate-50">
+                            <td className="px-4 py-3">
+                              <div className="font-semibold text-slate-900">
+                                {studentProfile.fullName || studentUser.name || 'Candidate'}
+                              </div>
+                              <div className="text-[11px] text-slate-500">
+                                {studentProfile.studentCode || studentUser.email}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">
+                              <div>{studentProfile.branch || 'Branch N/A'}</div>
+                              <div className="text-[11px] text-slate-400">
+                                Grad: {studentProfile.graduationYear || 'N/A'} • CGPA: {studentProfile.cgpa ?? 'N/A'}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  effectiveStatus === 'LIKELY_ELIGIBLE'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : effectiveStatus === 'POTENTIALLY_ELIGIBLE'
+                                    ? 'bg-amber-100 text-amber-800'
+                                    : 'bg-rose-100 text-rose-800'
+                                }`}
+                              >
+                                {effectiveStatus}
+                              </span>
+                              {isOverridden && (
+                                <div className="text-[10px] text-purple-700 font-medium mt-0.5" title={item.override?.reason}>
+                                  Staff Overridden: {item.override?.overrideStatus}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-[11px]">
+                              <span className="text-emerald-700 font-medium">✓ {item.snapshot?.matched?.length || 0}</span>
+                              {' / '}
+                              <span className="text-rose-600 font-medium">✕ {item.snapshot?.unmet?.length || 0}</span>
+                              {' / '}
+                              <span className="text-amber-600 font-medium">? {item.snapshot?.missing?.length || 0}</span>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <button
+                                onClick={() => openOverrideDialog(item)}
+                                className="px-2.5 py-1 text-xs font-semibold rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+                              >
+                                Override
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Override Dialog Modal */}
+      {overrideTargetEval && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4 animate-in fade-in-50 duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-indigo-600" />
+                Staff Eligibility Override
+              </h4>
+              <button
+                onClick={() => setOverrideTargetEval(null)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {overrideError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg">
+                {overrideError}
+              </div>
+            )}
+
+            <form onSubmit={handleOverrideSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Candidate</label>
+                <div className="p-2.5 bg-slate-50 rounded-lg text-slate-800 font-medium">
+                  {overrideTargetEval.studentProfileId?.fullName || overrideTargetEval.studentId?.name} (
+                  {overrideTargetEval.studentProfileId?.studentCode || overrideTargetEval.studentId?.email})
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Override Status *</label>
+                <select
+                  value={overrideStatus}
+                  onChange={(e) => setOverrideStatus(e.target.value)}
+                  className="w-full p-2 border border-slate-300 rounded-lg bg-white"
+                >
+                  <option value="LIKELY_ELIGIBLE">LIKELY_ELIGIBLE (Grant fit)</option>
+                  <option value="POTENTIALLY_ELIGIBLE">POTENTIALLY_ELIGIBLE (Under verification)</option>
+                  <option value="DOES_NOT_MEET">DOES_NOT_MEET (Ineligible)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">
+                  Audit Justification Reason * (Required by institutional compliance)
+                </label>
+                <textarea
+                  rows={3}
+                  value={overrideReason}
+                  onChange={(e) => setOverrideReason(e.target.value)}
+                  placeholder="e.g. Verified official updated grade sheet with college registrar."
+                  className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setOverrideTargetEval(null)}
+                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-slate-700 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={overrideSubmitting}
+                  className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-colors"
+                >
+                  {overrideSubmitting ? 'Saving...' : 'Confirm Override'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

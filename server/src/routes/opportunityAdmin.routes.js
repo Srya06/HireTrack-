@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as opportunityController from '../controllers/opportunity.controller.js';
+import * as eligibilityController from '../controllers/eligibility.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import { attachOrganization, authorizeMemberships } from '../middleware/org.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -51,4 +52,19 @@ router.post(
   opportunityController.archiveAdmin
 );
 
+// Staff cohort view of eligibility for an opportunity
+router.get(
+  '/:id/eligibility-results',
+  validate(validateObjectId('id')),
+  eligibilityController.getEligibilityCohortAdmin
+);
+
+// Staff eligibility override
+router.post(
+  '/eligibility/:evaluationId/override',
+  validate(validateObjectId('evaluationId')),
+  eligibilityController.overrideEligibilityAdmin
+);
+
 export default router;
+

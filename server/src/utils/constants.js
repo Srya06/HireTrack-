@@ -161,11 +161,32 @@ export const CRITERIA_TYPES = Object.freeze({
 
 export const CRITERIA_OPERATORS = Object.freeze({
   EQUALS: 'EQUALS',
+  EQ: 'EQUALS',
   IN: 'IN',
   GREATER_EQUAL: 'GREATER_EQUAL',
+  GTE: 'GREATER_EQUAL',
   LESS_EQUAL: 'LESS_EQUAL',
-  CONTAINS: 'CONTAINS'
+  LTE: 'LESS_EQUAL',
+  CONTAINS: 'CONTAINS',
+  CONTAINS_ANY: 'CONTAINS'
 });
+
+// --- HireTrack v3 Eligibility Constants (Chunk V4) ---
+
+export const ELIGIBILITY_STATUSES = Object.freeze({
+  LIKELY_ELIGIBLE: 'LIKELY_ELIGIBLE',
+  POTENTIALLY_ELIGIBLE: 'POTENTIALLY_ELIGIBLE',
+  DOES_NOT_MEET: 'DOES_NOT_MEET'
+});
+
+export const ELIGIBILITY_RESULT = Object.freeze({
+  PASS: 'PASS',
+  FAIL: 'FAIL',
+  MISSING: 'MISSING'
+});
+
+export const ELIGIBILITY_ENGINE_VERSION = '1';
+
 
 
 
