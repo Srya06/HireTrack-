@@ -14,6 +14,8 @@ import {
   StudentDashboard,
   JobsBrowse,
   JobDetails,
+  OpportunitiesBrowse,
+  OpportunityDetails,
   MyApplications,
   ApplicationDetails,
   StudentProfile,
@@ -23,6 +25,7 @@ import {
   JobApplicants,
   RecruiterProfile,
   AdminDashboard,
+  AdminOpportunities,
   StudentDirectory,
   PendingRecruiters,
   UserManagement,
@@ -62,6 +65,8 @@ export default function App() {
             <Route path="dashboard" element={<StudentDashboard />} />
             <Route path="jobs" element={<JobsBrowse />} />
             <Route path="jobs/:jobId" element={<JobDetails />} />
+            <Route path="opportunities" element={<OpportunitiesBrowse />} />
+            <Route path="opportunities/:id" element={<OpportunityDetails />} />
             <Route path="applications" element={<MyApplications />} />
             <Route path="applications/:applicationId" element={<ApplicationDetails />} />
             <Route path="profile" element={<StudentProfile />} />
@@ -131,6 +136,14 @@ export default function App() {
                 <FeatureFlagRoute flag="LEGACY_RECRUITER_FLOW">
                   <PendingRecruiters />
                 </FeatureFlagRoute>
+              }
+            />
+            <Route
+              path="opportunities"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
+                  <AdminOpportunities />
+                </MembershipRoute>
               }
             />
             <Route path="users" element={<UserManagement />} />

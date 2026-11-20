@@ -10,6 +10,8 @@ export { default as NotFound } from './public/NotFound.jsx';
 export { default as StudentDashboard } from './student/StudentDashboard.jsx';
 export { default as JobsBrowse } from './student/JobsBrowse.jsx';
 export { default as JobDetails } from './student/JobDetails.jsx';
+export { default as OpportunitiesBrowse } from './student/OpportunitiesBrowse.jsx';
+export { default as OpportunityDetails } from './student/OpportunityDetails.jsx';
 export { default as MyApplications } from './student/MyApplications.jsx';
 export { default as ApplicationDetails } from './student/ApplicationDetails.jsx';
 export { default as StudentProfile } from './student/StudentProfile.jsx';
@@ -24,6 +26,7 @@ export { default as RecruiterProfile } from './recruiter/RecruiterProfile.jsx';
 // Admin
 export { default as AdminDashboard } from './admin/AdminDashboard.jsx';
 export { default as StudentDirectory } from './admin/StudentDirectory.jsx';
+export { default as AdminOpportunities } from './admin/AdminOpportunities.jsx';
 export { default as PendingRecruiters } from './admin/PendingRecruiters.jsx';
 export { default as UserManagement } from './admin/UserManagement.jsx';
 export { default as JobModeration } from './admin/JobModeration.jsx';

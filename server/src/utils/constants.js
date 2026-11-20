@@ -135,4 +135,37 @@ export const ERROR_CODES = Object.freeze({
   INTERNAL_ERROR: 'INTERNAL_ERROR'
 });
 
+export const OPPORTUNITY_STATUSES = Object.freeze({
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  CLOSED: 'CLOSED',
+  EXPIRED: 'EXPIRED',
+  ARCHIVED: 'ARCHIVED'
+});
+
+export const OPPORTUNITY_WORK_MODES = Object.freeze({
+  REMOTE: 'remote',
+  HYBRID: 'hybrid',
+  ON_SITE: 'on_site'
+});
+
+export const CRITERIA_TYPES = Object.freeze({
+  DEGREE: 'DEGREE',
+  BRANCH: 'BRANCH',
+  GRADUATION_YEAR: 'GRADUATION_YEAR',
+  MIN_CGPA: 'MIN_CGPA',
+  SKILL: 'SKILL',
+  EXPERIENCE: 'EXPERIENCE',
+  OTHER: 'OTHER'
+});
+
+export const CRITERIA_OPERATORS = Object.freeze({
+  EQUALS: 'EQUALS',
+  IN: 'IN',
+  GREATER_EQUAL: 'GREATER_EQUAL',
+  LESS_EQUAL: 'LESS_EQUAL',
+  CONTAINS: 'CONTAINS'
+});
+
+
 

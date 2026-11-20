@@ -4,7 +4,7 @@ import { configService } from '../services/index.js';
 export const DEFAULT_FEATURE_FLAGS = Object.freeze({
   LEGACY_RECRUITER_FLOW: true,
   ALLOW_PUBLIC_STUDENT_SIGNUP: true,
-  V3_OPPORTUNITIES_ENABLED: false,
+  V3_OPPORTUNITIES_ENABLED: true,
   V3_MOCK_TESTS_ENABLED: false,
   V3_AI_INTERVIEWS_ENABLED: false,
   V3_HUMAN_INTERVIEWS_ENABLED: false,

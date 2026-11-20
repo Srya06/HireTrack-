@@ -13,6 +13,8 @@ import interviewRoutes from './interview.routes.js';
 import notificationRoutes from './notification.routes.js';
 import uploadRoutes from './upload.routes.js';
 import fileRoutes from './file.routes.js';
+import opportunityRoutes from './opportunity.routes.js';
+import opportunityAdminRoutes from './opportunityAdmin.routes.js';
 import { protect } from '../middleware/auth.middleware.js';
 import * as authController from '../controllers/auth.controller.js';
 
@@ -24,7 +26,9 @@ apiRouter.get('/me', protect, authController.getMe);
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/organizations', organizationRoutes);
 apiRouter.use('/admin/staff', staffRoutes);
+apiRouter.use('/admin/opportunities', opportunityAdminRoutes);
 apiRouter.use('/admin', adminRoutes);
+apiRouter.use('/opportunities', opportunityRoutes);
 apiRouter.use('/students', studentRoutes);
 apiRouter.use('/recruiters', recruiterRoutes);
 apiRouter.use('/jobs', jobRoutes);
