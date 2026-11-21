@@ -23,6 +23,9 @@ import aiInterviewStudentRoutes from './aiInterviewStudent.routes.js';
 import humanInterviewAdminRoutes from './humanInterviewAdmin.routes.js';
 import humanInterviewStudentRoutes from './humanInterviewStudent.routes.js';
 import interviewerRoutes from './interviewer.routes.js';
+import readinessAdminRoutes from './readinessAdmin.routes.js';
+import reportsAdminRoutes from './reportsAdmin.routes.js';
+import auditAdminRoutes from './auditAdmin.routes.js';
 import * as eligibilityController from '../controllers/eligibility.controller.js';
 import { attachOrganization, authorizeMemberships } from '../middleware/org.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -48,6 +51,9 @@ apiRouter.post(
   eligibilityController.overrideEligibilityAdmin
 );
 apiRouter.use('/admin/opportunities', opportunityAdminRoutes);
+apiRouter.use('/admin/readiness', readinessAdminRoutes);
+apiRouter.use('/admin/reports', reportsAdminRoutes);
+apiRouter.use('/admin/audit-logs', auditAdminRoutes);
 apiRouter.use('/admin', mockTestAdminRoutes);
 apiRouter.use('/admin', aiInterviewAdminRoutes);
 apiRouter.use('/admin', humanInterviewAdminRoutes);

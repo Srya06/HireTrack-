@@ -20,7 +20,10 @@ import {
   TrendingUp,
   Award,
   GraduationCap,
-  Settings
+  Settings,
+  Compass,
+  BarChart3,
+  ShieldAlert
 } from 'lucide-react';
 import StatusBadge from '../components/StatusBadge.jsx';
 import NotificationBell from '../components/NotificationBell.jsx';
@@ -135,6 +138,13 @@ export default function DashboardLayout() {
           { name: 'Interview Policies', to: '/admin/interview-policies', icon: Settings }
         ]
       : []),
+    ...(flags.V3_READINESS_ENABLED && (hasOrgAdmin || hasPlacementCoordinator)
+      ? [
+          { name: 'Cohort Readiness', to: '/admin/readiness', icon: Compass },
+          { name: 'Analytics Reports', to: '/admin/reports', icon: BarChart3 }
+        ]
+      : []),
+    ...(hasOrgAdmin ? [{ name: 'Audit Logs', to: '/admin/audit-logs', icon: ShieldAlert }] : []),
     ...(flags.V3_AMBASSADORS_ENABLED && (hasOrgAdmin || hasAmbassadorCoordinator)
       ? [{ name: 'Ambassadors', to: '/admin/ambassadors', icon: Award }]
       : [])

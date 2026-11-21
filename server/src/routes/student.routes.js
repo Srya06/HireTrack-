@@ -4,6 +4,7 @@ import * as jobApplicationController from '../controllers/jobApplication.control
 import * as mockTestAttemptController from '../controllers/mockTestAttempt.controller.js';
 import * as aiInterviewController from '../controllers/aiInterview.controller.js';
 import * as humanInterviewController from '../controllers/humanInterview.controller.js';
+import * as readinessController from '../controllers/readiness.controller.js';
 import { protect, authorizeRoles } from '../middleware/auth.middleware.js';
 import { attachOrganization } from '../middleware/org.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -75,6 +76,14 @@ router.get(
   protect,
   attachOrganization,
   humanInterviewController.getStudentHistory
+);
+
+// HireTrack v3 Student Readiness Dashboard (Chunk V10)
+router.get(
+  '/me/readiness',
+  protect,
+  attachOrganization,
+  readinessController.getStudentReadinessMe
 );
 
 // Route with explicit ID param (verifies resource ownership and role permissions)

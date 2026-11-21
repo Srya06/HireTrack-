@@ -93,3 +93,78 @@ export const recordAuditEvent = async ({
     return null;
   }
 };
+
+/**
+ * Retrieves paginated audit logs for ORG_ADMIN with filters.
+ * Scoped strictly to the caller's organization.
+ */
+export const getAuditLogs = async (organizationId, {
+  page = 1,
+  limit = 20,
+  action,
+  resourceType,
+  actorId,
+  startDate,
+  endDate
+} = {}) => {
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+  const skip = (pageNum - 1) * limitNum;
+
+  const query = { organizationId };
+
+  if (action) {
+    query.action = action;
+  }
+  if (resourceType) {
+    query.$or = [{ resourceType }, { entityType: resourceType }];
+  }
+  if (actorId) {
+    query.actorId = actorId;
+  }
+  if (startDate || endDate) {
+    query.createdAt = {};
+    if (startDate) query.createdAt.$gte = new Date(startDate);
+    if (endDate) query.createdAt.$lte = new Date(endDate);
+  }
+
+  const [total, logs] = await Promise.all([
+    AuditLog.countDocuments(query),
+    AuditLog.find(query)
+      .populate('actorId', 'name email role')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .lean()
+  ]);
+
+  const totalPages = Math.ceil(total / limitNum) || 1;
+
+  return {
+    logs: logs.map((log) => ({
+      id: log._id,
+      organizationId: log.organizationId,
+      actor: log.actorId
+        ? {
+            id: log.actorId._id,
+            name: log.actorId.name,
+            email: log.actorId.email,
+            role: log.actorId.role
+          }
+        : null,
+      action: log.action,
+      resourceType: log.resourceType || log.entityType,
+      resourceId: log.resourceId || log.entityId,
+      metadata: log.metadata || {},
+      createdAt: log.createdAt
+    })),
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages,
+      hasNextPage: pageNum < totalPages,
+      hasPrevPage: pageNum > 1
+    }
+  };
+};

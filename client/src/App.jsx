@@ -27,6 +27,7 @@ import {
   MockInterviewsLanding,
   AiInterviewChat,
   AiInterviewFeedback,
+  StudentReadinessDashboard,
   RecruiterDashboard,
   MyJobs,
   CreateEditJob,
@@ -38,6 +39,9 @@ import {
   AdminMockTests,
   AdminInterviewTracks,
   AdminInterviewPolicy,
+  AdminCohortReadiness,
+  AdminReports,
+  AdminAuditLogs,
   StudentDirectory,
   PendingRecruiters,
   UserManagement,
@@ -139,6 +143,10 @@ export default function App() {
                   <AiInterviewFeedback />
                 </FeatureFlagRoute>
               }
+            />
+            <Route
+              path="readiness"
+              element={<StudentReadinessDashboard />}
             />
           </Route>
 
@@ -245,6 +253,30 @@ export default function App() {
               element={
                 <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
                   <AdminInterviewPolicy />
+                </MembershipRoute>
+              }
+            />
+            <Route
+              path="readiness"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
+                  <AdminCohortReadiness />
+                </MembershipRoute>
+              }
+            />
+            <Route
+              path="reports"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
+                  <AdminReports />
+                </MembershipRoute>
+              }
+            />
+            <Route
+              path="audit-logs"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN']}>
+                  <AdminAuditLogs />
                 </MembershipRoute>
               }
             />

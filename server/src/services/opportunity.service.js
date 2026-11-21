@@ -3,6 +3,7 @@ import { Organization } from '../models/organization.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import { scopeOrg, findByIdInOrg, paginateInOrg } from '../utils/orgScope.js';
 import { recordAuditEvent } from './audit.service.js';
+import { notifyJobPublished } from './notification.service.js';
 import {
   OPPORTUNITY_STATUSES,
   OPPORTUNITY_WORK_MODES,
@@ -453,6 +454,13 @@ export const publishOpportunity = async (organizationId, actorUser, id) => {
     },
     allowedMetadataKeys: ['jobTitle', 'companyName', 'criteriaVersion']
   });
+
+  // Automated notification to enrolled students
+  try {
+    await notifyJobPublished({ organizationId, job: opp });
+  } catch (notifErr) {
+    console.warn('[OpportunityService] Notification failed:', notifErr.message);
+  }
 
   const obj = opp.toJSON();
   obj.effectiveStatus = opp.getEffectiveStatus();

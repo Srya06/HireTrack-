@@ -129,5 +129,6 @@ interviewTrackSchema.index({ organizationId: 1, roleCategory: 1 });
 
 const InterviewTrack = mongoose.model('InterviewTrack', interviewTrackSchema);
 
+export { InterviewTrack };
 export default InterviewTrack;
 

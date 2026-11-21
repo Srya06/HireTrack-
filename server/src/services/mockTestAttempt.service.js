@@ -8,6 +8,7 @@ import {
 import { ApiError } from '../utils/ApiError.js';
 import { findByIdInOrg, scopeOrg, paginateInOrg } from '../utils/orgScope.js';
 import { recordAuditEvent } from './audit.service.js';
+import { notifyTestResults } from './notification.service.js';
 import {
   MOCK_TEST_STATUSES,
   MOCK_TEST_ATTEMPT_STATUSES,
@@ -505,6 +506,20 @@ export const submitAttempt = async (
     },
     allowedMetadataKeys: ['mockTestId', 'score', 'maxScore', 'percentage', 'passed', 'timedOut']
   });
+
+  // Automated notification to student
+  try {
+    const testDoc = await MockTest.findById(lockedAttempt.mockTestId).select('title').lean();
+    await notifyTestResults({
+      organizationId,
+      studentUserId,
+      testTitle: testDoc?.title || 'Mock Test',
+      percentage,
+      attemptId: lockedAttempt._id
+    });
+  } catch (notifErr) {
+    console.warn('[MockTestAttemptService] Notification failed:', notifErr.message);
+  }
 
   return getAttemptResult(organizationId, studentUserId, lockedAttempt._id);
 };
