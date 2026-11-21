@@ -15,7 +15,12 @@ const STAFF_ROLES = [
 ];
 
 // All staff mock test authoring routes require authentication, org context, and staff membership
-router.use(protect, attachOrganization, authorizeMemberships(...STAFF_ROLES));
+router.use(
+  ['/test-categories', '/question-banks', '/questions', '/mock-tests', '/reports'],
+  protect,
+  attachOrganization,
+  authorizeMemberships(...STAFF_ROLES)
+);
 
 // ==========================================
 // 1. Categories Endpoints
