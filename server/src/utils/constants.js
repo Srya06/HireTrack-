@@ -201,7 +201,40 @@ export const JOB_APPLICATION_VERIFICATION = Object.freeze({
   VERIFIED: 'VERIFIED'
 });
 
+// --- HireTrack v3 Mock Tests & Assessments Constants (Chunk V6) ---
 
+export const QUESTION_TYPES = Object.freeze({
+  SINGLE_CHOICE: 'SINGLE_CHOICE',
+  MULTI_SELECT: 'MULTI_SELECT',
+  SHORT_ANSWER: 'SHORT_ANSWER',
+  CODING: 'CODING'
+});
 
+export const QUESTION_DIFFICULTIES = Object.freeze({
+  EASY: 'EASY',
+  MEDIUM: 'MEDIUM',
+  HARD: 'HARD'
+});
 
+export const QUESTION_STATUSES = Object.freeze({
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED'
+});
+
+export const MOCK_TEST_STATUSES = Object.freeze({
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
+});
+
+export const MOCK_TEST_REVIEW_POLICIES = Object.freeze({
+  IMMEDIATE: 'IMMEDIATE',
+  AFTER_DEADLINE: 'AFTER_DEADLINE',
+  NEVER: 'NEVER'
+});
+
+export const QUESTION_SELECTION_MODES = Object.freeze({
+  MANUAL: 'MANUAL',
+  RANDOM_FROM_BANK: 'RANDOM_FROM_BANK'
+});
 

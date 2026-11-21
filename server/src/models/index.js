@@ -12,4 +12,8 @@ export { FileAsset } from './fileAsset.model.js';
 export { JobOpportunity } from './jobOpportunity.model.js';
 export { EligibilityEvaluation } from './eligibilityEvaluation.model.js';
 export { JobApplication } from './jobApplication.model.js';
+export { TestCategory } from './testCategory.model.js';
+export { QuestionBank } from './questionBank.model.js';
+export { Question } from './question.model.js';
+export { MockTest } from './mockTest.model.js';
 

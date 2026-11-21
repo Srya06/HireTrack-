@@ -28,6 +28,7 @@ import {
   AdminDashboard,
   AdminOpportunities,
   AdminApplications,
+  AdminMockTests,
   StudentDirectory,
   PendingRecruiters,
   UserManagement,
@@ -154,6 +155,14 @@ export default function App() {
               element={
                 <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
                   <AdminApplications />
+                </MembershipRoute>
+              }
+            />
+            <Route
+              path="mock-tests"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
+                  <AdminMockTests />
                 </MembershipRoute>
               }
             />

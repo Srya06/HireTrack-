@@ -10,5 +10,6 @@ export * as configService from './config.service.js';
 export * as notificationService from './notification.service.js';
 export * as healthService from './health.service.js';
 export * as opportunityService from './opportunity.service.js';
+export * as mockTestService from './mockTest.service.js';
 export { default as api } from './api.js';
 

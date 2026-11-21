@@ -15,6 +15,8 @@ import uploadRoutes from './upload.routes.js';
 import fileRoutes from './file.routes.js';
 import opportunityRoutes from './opportunity.routes.js';
 import opportunityAdminRoutes from './opportunityAdmin.routes.js';
+import mockTestAdminRoutes from './mockTestAdmin.routes.js';
+import mockTestStudentRoutes from './mockTestStudent.routes.js';
 import * as eligibilityController from '../controllers/eligibility.controller.js';
 import { attachOrganization, authorizeMemberships } from '../middleware/org.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -40,8 +42,10 @@ apiRouter.post(
   eligibilityController.overrideEligibilityAdmin
 );
 apiRouter.use('/admin/opportunities', opportunityAdminRoutes);
+apiRouter.use('/admin', mockTestAdminRoutes);
 apiRouter.use('/admin', adminRoutes);
 apiRouter.use('/opportunities', opportunityRoutes);
+apiRouter.use('/mock-tests', mockTestStudentRoutes);
 apiRouter.use('/students', studentRoutes);
 apiRouter.use('/recruiters', recruiterRoutes);
 apiRouter.use('/jobs', jobRoutes);
