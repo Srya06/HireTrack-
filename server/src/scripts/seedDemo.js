@@ -3,6 +3,8 @@ import { connectDB, disconnectDB } from '../config/db.js';
 import { env } from '../config/env.js';
 import { ensureDemoResumeFile } from '../utils/demoPdfGenerator.js';
 import { runOrgBackfill } from './migrateOrgBackfill.js';
+import { ensureDefaultOrganization } from './seedDefaultOrg.js';
+import { seedMockTestData } from './seedMockTests.js';
 import { seedSyntheticDemoV3 } from './seedSyntheticDemoV3.js';
 import {
   User,
@@ -332,6 +334,10 @@ export const seedDemo = async () => {
 
     // 8. Ensure default Organization & v3 OrganizationMemberships for seeded demo users
     await runOrgBackfill({ dryRun: false });
+    const { organization: defaultOrg } = await ensureDefaultOrganization();
+    if (defaultOrg && admin) {
+      await seedMockTestData(defaultOrg._id, admin._id);
+    }
 
     // 9. Seed HireTrack v3 synthetic opportunities, mock tests, and outreach models (0 real PII)
     await seedSyntheticDemoV3();

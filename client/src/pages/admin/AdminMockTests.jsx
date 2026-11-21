@@ -116,6 +116,31 @@ export default function AdminMockTests() {
   const [bankForm, setBankForm] = useState({ name: '', categoryId: '', description: '', topicTagsInput: '' });
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
+  const [showInlineCategoryInput, setShowInlineCategoryInput] = useState(false);
+  const [inlineCategoryName, setInlineCategoryName] = useState('');
+  const [inlineCategoryCreating, setInlineCategoryCreating] = useState(false);
+
+  const handleCreateInlineCategory = async () => {
+    if (!inlineCategoryName.trim()) return;
+    setInlineCategoryCreating(true);
+    try {
+      const res = await mockTestService.createCategory({
+        name: inlineCategoryName.trim()
+      });
+      const created = res?.data?.data || res?.data;
+      await fetchCategoriesAndBanks();
+      if (created?._id) {
+        setTestForm((prev) => ({ ...prev, categoryId: created._id }));
+        setBankForm((prev) => ({ ...prev, categoryId: created._id }));
+      }
+      setInlineCategoryName('');
+      setShowInlineCategoryInput(false);
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Failed to create category');
+    } finally {
+      setInlineCategoryCreating(false);
+    }
+  };
 
   // --- Preview Modal State ---
   const [previewData, setPreviewData] = useState(null);
@@ -898,19 +923,69 @@ export default function AdminMockTests() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-700">Category</label>
+                <button
+                  type="button"
+                  onClick={() => setShowInlineCategoryInput(!showInlineCategoryInput)}
+                  className="text-[11px] font-medium text-indigo-600 hover:text-indigo-800 focus:outline-none"
+                >
+                  {showInlineCategoryInput ? 'Cancel' : '+ New Category'}
+                </button>
+              </div>
+
+              {showInlineCategoryInput && (
+                <div className="mb-2 p-2 bg-indigo-50/70 border border-indigo-100 rounded-lg flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={inlineCategoryName}
+                    onChange={(e) => setInlineCategoryName(e.target.value)}
+                    placeholder="New category name (e.g. Technical Assessment)"
+                    className="flex-1 text-xs bg-white rounded-md border border-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleCreateInlineCategory();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    disabled={inlineCategoryCreating || !inlineCategoryName.trim()}
+                    onClick={handleCreateInlineCategory}
+                    className="px-2.5 py-1 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-md transition"
+                  >
+                    {inlineCategoryCreating ? 'Saving...' : 'Add'}
+                  </button>
+                </div>
+              )}
+
               <select
                 value={testForm.categoryId}
                 onChange={(e) => setTestForm({ ...testForm, categoryId: e.target.value })}
-                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-white text-slate-700"
+                className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
-                <option value="">Select Category</option>
+                <option value="">
+                  {categories.length === 0 ? 'No categories yet — click + New Category' : 'Select Category'}
+                </option>
                 {categories.map((c) => (
                   <option key={c._id} value={c._id}>
                     {c.name}
                   </option>
                 ))}
               </select>
+              {categories.length === 0 && !showInlineCategoryInput && (
+                <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
+                  <span>No categories available.</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowInlineCategoryInput(true)}
+                    className="underline font-medium text-indigo-600 hover:text-indigo-800"
+                  >
+                    Click here to create one.
+                  </button>
+                </p>
+              )}
             </div>
 
             <div>
@@ -1289,19 +1364,69 @@ export default function AdminMockTests() {
       >
         <div className="space-y-3 pt-2">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-700">Category</label>
+              <button
+                type="button"
+                onClick={() => setShowInlineCategoryInput(!showInlineCategoryInput)}
+                className="text-[11px] font-medium text-indigo-600 hover:text-indigo-800 focus:outline-none"
+              >
+                {showInlineCategoryInput ? 'Cancel' : '+ New Category'}
+              </button>
+            </div>
+
+            {showInlineCategoryInput && (
+              <div className="mb-2 p-2 bg-indigo-50/70 border border-indigo-100 rounded-lg flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={inlineCategoryName}
+                  onChange={(e) => setInlineCategoryName(e.target.value)}
+                  placeholder="New category name"
+                  className="flex-1 text-xs bg-white rounded-md border border-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCreateInlineCategory();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  disabled={inlineCategoryCreating || !inlineCategoryName.trim()}
+                  onClick={handleCreateInlineCategory}
+                  className="px-2.5 py-1 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-md transition"
+                >
+                  {inlineCategoryCreating ? 'Saving...' : 'Add'}
+                </button>
+              </div>
+            )}
+
             <select
               value={bankForm.categoryId}
               onChange={(e) => setBankForm({ ...bankForm, categoryId: e.target.value })}
               className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-white"
             >
-              <option value="">Select Category</option>
+              <option value="">
+                {categories.length === 0 ? 'No categories yet — click + New Category' : 'Select Category'}
+              </option>
               {categories.map((c) => (
                 <option key={c._id} value={c._id}>
                   {c.name}
                 </option>
               ))}
             </select>
+            {categories.length === 0 && !showInlineCategoryInput && (
+              <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
+                <span>No categories available.</span>
+                <button
+                  type="button"
+                  onClick={() => setShowInlineCategoryInput(true)}
+                  className="underline font-medium text-indigo-600 hover:text-indigo-800"
+                >
+                  Click here to create one.
+                </button>
+              </p>
+            )}
           </div>
 
           <div>
