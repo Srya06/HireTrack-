@@ -38,6 +38,7 @@ export { default as AdminOpportunities } from './admin/AdminOpportunities.jsx';
 export { default as AdminApplications } from './admin/AdminApplications.jsx';
 export { default as AdminMockTests } from './admin/AdminMockTests.jsx';
 export { default as AdminInterviewTracks } from './admin/AdminInterviewTracks.jsx';
+export { default as AdminInterviewPolicy } from './admin/AdminInterviewPolicy.jsx';
 export { default as PendingRecruiters } from './admin/PendingRecruiters.jsx';
 export { default as UserManagement } from './admin/UserManagement.jsx';
 export { default as JobModeration } from './admin/JobModeration.jsx';
@@ -45,3 +46,4 @@ export { default as StaffRoles } from './admin/StaffRoles.jsx';
 
 // Interviewer (v3)
 export { default as InterviewerDashboard } from './interviewer/InterviewerDashboard.jsx';
+export { default as InterviewerWorkspace } from './interviewer/InterviewerWorkspace.jsx';

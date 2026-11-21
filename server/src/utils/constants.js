@@ -278,5 +278,39 @@ export const AI_PROVIDERS = Object.freeze({
   OPENAI: 'openai'
 });
 
+// --- HireTrack v3 Human Mock Interviews Constants (Chunk V9) ---
+
+export const HUMAN_INTERVIEW_SLOT_STATUSES = Object.freeze({
+  AVAILABLE: 'AVAILABLE',
+  BOOKED: 'BOOKED',
+  BLOCKED: 'BLOCKED'
+});
+
+export const HUMAN_INTERVIEW_BOOKING_STATUSES = Object.freeze({
+  REQUESTED: 'REQUESTED',
+  SCHEDULED: 'SCHEDULED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  NO_SHOW: 'NO_SHOW'
+});
+
+export const HUMAN_INTERVIEW_EVALUATION_STATUSES = Object.freeze({
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  RELEASED: 'RELEASED'
+});
+
+export const INSTITUTE_POLICY_KEYS = Object.freeze({
+  MOCK_INTERVIEWS: 'mock_interviews'
+});
+
+export const DEFAULT_MOCK_INTERVIEW_POLICY = Object.freeze({
+  requireAiPassForHumanMock: false,
+  minOverallScore: 70,
+  trackIds: [],
+  cancelBeforeHours: 24,
+  allowResumeView: true
+});
+
 
 

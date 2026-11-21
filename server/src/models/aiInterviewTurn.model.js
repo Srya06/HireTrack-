@@ -54,3 +54,4 @@ aiInterviewTurnSchema.index({ sessionId: 1, createdAt: 1 });
 const AiInterviewTurn = mongoose.model('AiInterviewTurn', aiInterviewTurnSchema);
 
 export default AiInterviewTurn;
+

@@ -154,3 +154,4 @@ aiMockInterviewSessionSchema.index({ retentionExpiresAt: 1 });
 const AiMockInterviewSession = mongoose.model('AiMockInterviewSession', aiMockInterviewSessionSchema);
 
 export default AiMockInterviewSession;
+

@@ -141,11 +141,10 @@ export default function AiInterviewFeedback() {
         <>
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
             <div
-              className={`p-6 text-white ${
-                evaluation.passed
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700'
-                  : 'bg-gradient-to-r from-slate-700 to-slate-900'
-              }`}
+              className={`p-6 text-white ${evaluation.passed
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-700'
+                : 'bg-gradient-to-r from-slate-700 to-slate-900'
+                }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -216,13 +215,12 @@ export default function AiInterviewFeedback() {
                       {/* Progress bar */}
                       <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 ${
-                            dimPct >= 70
-                              ? 'bg-emerald-500'
-                              : dimPct >= 50
+                          className={`h-full transition-all duration-300 ${dimPct >= 70
+                            ? 'bg-emerald-500'
+                            : dimPct >= 50
                               ? 'bg-amber-500'
                               : 'bg-rose-500'
-                          }`}
+                            }`}
                           style={{ width: `${Math.min(100, Math.max(0, dimPct))}%` }}
                         />
                       </div>
@@ -324,3 +322,4 @@ export default function AiInterviewFeedback() {
     </div>
   );
 }
+

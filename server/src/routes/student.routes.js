@@ -3,6 +3,7 @@ import * as studentController from '../controllers/student.controller.js';
 import * as jobApplicationController from '../controllers/jobApplication.controller.js';
 import * as mockTestAttemptController from '../controllers/mockTestAttempt.controller.js';
 import * as aiInterviewController from '../controllers/aiInterview.controller.js';
+import * as humanInterviewController from '../controllers/humanInterview.controller.js';
 import { protect, authorizeRoles } from '../middleware/auth.middleware.js';
 import { attachOrganization } from '../middleware/org.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -66,6 +67,14 @@ router.get(
   protect,
   attachOrganization,
   aiInterviewController.getStudentHistory
+);
+
+// HireTrack v3 Student Human Mock Interview History (Chunk V9)
+router.get(
+  '/me/human-interview-history',
+  protect,
+  attachOrganization,
+  humanInterviewController.getStudentHistory
 );
 
 // Route with explicit ID param (verifies resource ownership and role permissions)

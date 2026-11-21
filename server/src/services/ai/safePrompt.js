@@ -127,3 +127,4 @@ Evaluate the candidate and return JSON strictly in this structure:
 
   return { systemPrompt, userPrompt };
 };
+

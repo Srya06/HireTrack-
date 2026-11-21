@@ -37,12 +37,14 @@ import {
   AdminApplications,
   AdminMockTests,
   AdminInterviewTracks,
+  AdminInterviewPolicy,
   StudentDirectory,
   PendingRecruiters,
   UserManagement,
   JobModeration,
   StaffRoles,
-  InterviewerDashboard
+  InterviewerDashboard,
+  InterviewerWorkspace
 } from './pages/index.js';
 
 export default function App() {
@@ -238,6 +240,14 @@ export default function App() {
                 </MembershipRoute>
               }
             />
+            <Route
+              path="interview-policies"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
+                  <AdminInterviewPolicy />
+                </MembershipRoute>
+              }
+            />
             <Route path="users" element={<UserManagement />} />
             <Route path="jobs" element={<JobModeration />} />
           </Route>
@@ -247,13 +257,14 @@ export default function App() {
             path="/interviewer"
             element={
               <ProtectedRoute>
-                <MembershipRoute allowedMemberships={['INTERVIEWER']}>
+                <MembershipRoute allowedMemberships={['INTERVIEWER', 'ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
                   <DashboardLayout />
                 </MembershipRoute>
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/interviewer/dashboard" replace />} />
+            <Route index element={<Navigate to="/interviewer/workspace" replace />} />
+            <Route path="workspace" element={<InterviewerWorkspace />} />
             <Route path="dashboard" element={<InterviewerDashboard />} />
           </Route>
 

@@ -21,4 +21,9 @@ export { MockTestAnswer } from './mockTestAnswer.model.js';
 export { default as InterviewTrack } from './interviewTrack.model.js';
 export { default as AiMockInterviewSession } from './aiMockInterviewSession.model.js';
 export { default as AiInterviewTurn } from './aiInterviewTurn.model.js';
+export { InterviewerProfile } from './interviewerProfile.model.js';
+export { HumanMockInterviewSlot } from './humanMockInterviewSlot.model.js';
+export { HumanMockInterviewBooking } from './humanMockInterviewBooking.model.js';
+export { HumanInterviewEvaluation } from './humanInterviewEvaluation.model.js';
+export { InstitutePolicy } from './institutePolicy.model.js';
 

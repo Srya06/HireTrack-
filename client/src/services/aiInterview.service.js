@@ -73,3 +73,4 @@ export const archiveAdminTrack = async (id) => {
   const response = await api.delete(`/admin/interview-tracks/${id}`);
   return response;
 };
+
