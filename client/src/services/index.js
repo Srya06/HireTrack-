@@ -11,5 +11,6 @@ export * as notificationService from './notification.service.js';
 export * as healthService from './health.service.js';
 export * as opportunityService from './opportunity.service.js';
 export * as mockTestService from './mockTest.service.js';
+export * as aiInterviewService from './aiInterview.service.js';
 export { default as api } from './api.js';
 

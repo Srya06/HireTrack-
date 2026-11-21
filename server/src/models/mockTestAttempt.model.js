@@ -137,3 +137,4 @@ mockTestAttemptSchema.index({ organizationId: 1, mockTestId: 1, status: 1 });
 mockTestAttemptSchema.index({ organizationId: 1, status: 1, deadlineAt: 1 });
 
 export const MockTestAttempt = mongoose.model('MockTestAttempt', mockTestAttemptSchema);
+

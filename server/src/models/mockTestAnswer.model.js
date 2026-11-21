@@ -70,3 +70,4 @@ mockTestAnswerSchema.index({ attemptId: 1, questionId: 1 }, { unique: true });
 mockTestAnswerSchema.index({ organizationId: 1, attemptId: 1 });
 
 export const MockTestAnswer = mongoose.model('MockTestAnswer', mockTestAnswerSchema);
+

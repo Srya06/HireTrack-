@@ -128,6 +128,9 @@ export default function DashboardLayout() {
     ...(flags.V3_MOCK_TESTS_ENABLED && (hasOrgAdmin || hasPlacementCoordinator)
       ? [{ name: 'Mock Tests', to: '/admin/mock-tests', icon: ClipboardList }]
       : []),
+    ...(flags.V3_AI_INTERVIEWS_ENABLED && (hasOrgAdmin || hasPlacementCoordinator)
+      ? [{ name: 'Interview Tracks', to: '/admin/interview-tracks', icon: MessageSquare }]
+      : []),
     ...(flags.V3_AMBASSADORS_ENABLED && (hasOrgAdmin || hasAmbassadorCoordinator)
       ? [{ name: 'Ambassadors', to: '/admin/ambassadors', icon: Award }]
       : [])

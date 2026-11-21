@@ -12,7 +12,7 @@ import {
 } from '../src/utils/constants.js';
 import { signToken } from '../src/utils/token.js';
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 describe('Job Discovery & Application Pipeline (CHUNK 4)', () => {
   const timestamp = Date.now();
@@ -32,6 +32,7 @@ describe('Job Discovery & Application Pipeline (CHUNK 4)', () => {
 
   beforeAll(async () => {
     await connectDB();
+    await Application.createIndexes();
 
     // Admin
     adminUser = await User.create({

@@ -247,4 +247,36 @@ export const MOCK_TEST_ATTEMPT_STATUSES = Object.freeze({
   EVALUATED: 'EVALUATED'
 });
 
+// --- HireTrack v3 AI Mock Interviews Constants (Chunk V8) ---
+
+export const INTERVIEW_TRACK_TYPES = Object.freeze({
+  AI: 'AI',
+  HUMAN: 'HUMAN'
+});
+
+export const INTERVIEW_TRACK_STATUSES = Object.freeze({
+  ACTIVE: 'ACTIVE',
+  DRAFT: 'DRAFT',
+  ARCHIVED: 'ARCHIVED'
+});
+
+export const AI_INTERVIEW_SESSION_STATUSES = Object.freeze({
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  INTERRUPTED: 'INTERRUPTED',
+  FAILED: 'FAILED'
+});
+
+export const AI_INTERVIEW_SPEAKERS = Object.freeze({
+  AI: 'AI',
+  STUDENT: 'STUDENT'
+});
+
+export const AI_PROVIDERS = Object.freeze({
+  MOCK: 'mock',
+  GEMINI: 'gemini',
+  OPENAI: 'openai'
+});
+
+
 

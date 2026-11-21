@@ -20,6 +20,9 @@ export { default as MockTestsCatalogue } from './student/MockTestsCatalogue.jsx'
 export { default as MockTestInstructions } from './student/MockTestInstructions.jsx';
 export { default as MockTestPlayer } from './student/MockTestPlayer.jsx';
 export { default as MockTestResult } from './student/MockTestResult.jsx';
+export { default as MockInterviewsLanding } from './student/MockInterviewsLanding.jsx';
+export { default as AiInterviewChat } from './student/AiInterviewChat.jsx';
+export { default as AiInterviewFeedback } from './student/AiInterviewFeedback.jsx';
 
 // Recruiter
 export { default as RecruiterDashboard } from './recruiter/RecruiterDashboard.jsx';
@@ -34,6 +37,7 @@ export { default as StudentDirectory } from './admin/StudentDirectory.jsx';
 export { default as AdminOpportunities } from './admin/AdminOpportunities.jsx';
 export { default as AdminApplications } from './admin/AdminApplications.jsx';
 export { default as AdminMockTests } from './admin/AdminMockTests.jsx';
+export { default as AdminInterviewTracks } from './admin/AdminInterviewTracks.jsx';
 export { default as PendingRecruiters } from './admin/PendingRecruiters.jsx';
 export { default as UserManagement } from './admin/UserManagement.jsx';
 export { default as JobModeration } from './admin/JobModeration.jsx';

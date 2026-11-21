@@ -24,6 +24,9 @@ import {
   MockTestInstructions,
   MockTestPlayer,
   MockTestResult,
+  MockInterviewsLanding,
+  AiInterviewChat,
+  AiInterviewFeedback,
   RecruiterDashboard,
   MyJobs,
   CreateEditJob,
@@ -33,6 +36,7 @@ import {
   AdminOpportunities,
   AdminApplications,
   AdminMockTests,
+  AdminInterviewTracks,
   StudentDirectory,
   PendingRecruiters,
   UserManagement,
@@ -107,6 +111,30 @@ export default function App() {
               element={
                 <FeatureFlagRoute flag="V3_MOCK_TESTS_ENABLED">
                   <MockTestResult />
+                </FeatureFlagRoute>
+              }
+            />
+            <Route
+              path="mock-interviews"
+              element={
+                <FeatureFlagRoute flag="V3_AI_INTERVIEWS_ENABLED">
+                  <MockInterviewsLanding />
+                </FeatureFlagRoute>
+              }
+            />
+            <Route
+              path="mock-interviews/ai/:sessionId"
+              element={
+                <FeatureFlagRoute flag="V3_AI_INTERVIEWS_ENABLED">
+                  <AiInterviewChat />
+                </FeatureFlagRoute>
+              }
+            />
+            <Route
+              path="mock-interviews/ai/:sessionId/feedback"
+              element={
+                <FeatureFlagRoute flag="V3_AI_INTERVIEWS_ENABLED">
+                  <AiInterviewFeedback />
                 </FeatureFlagRoute>
               }
             />
@@ -199,6 +227,14 @@ export default function App() {
               element={
                 <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
                   <AdminMockTests />
+                </MembershipRoute>
+              }
+            />
+            <Route
+              path="interview-tracks"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
+                  <AdminInterviewTracks />
                 </MembershipRoute>
               }
             />

@@ -18,4 +18,7 @@ export { Question } from './question.model.js';
 export { MockTest } from './mockTest.model.js';
 export { MockTestAttempt } from './mockTestAttempt.model.js';
 export { MockTestAnswer } from './mockTestAnswer.model.js';
+export { default as InterviewTrack } from './interviewTrack.model.js';
+export { default as AiMockInterviewSession } from './aiMockInterviewSession.model.js';
+export { default as AiInterviewTurn } from './aiInterviewTurn.model.js';
 

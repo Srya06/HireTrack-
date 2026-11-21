@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import mongoose from 'mongoose';
 import request from 'supertest';
 import app from '../src/app.js';
 import { connectDB, disconnectDB } from '../src/config/db.js';
@@ -383,7 +384,7 @@ describe('Chunk V7: Mock Test Attempt Lifecycle & Scoring Engine Suite', () => {
     });
 
     it('rejects saving answer for question not belonging to this attempt', async () => {
-      const fakeQId = questionA1._id.toString().replace(/.$/, '0');
+      const fakeQId = new mongoose.Types.ObjectId().toString();
       await request(app)
         .put(`/api/v1/mock-test-attempts/${attemptId}/answers/${fakeQId}`)
         .set('Authorization', `Bearer ${studentA2Token}`)
