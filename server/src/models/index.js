@@ -26,4 +26,10 @@ export { HumanMockInterviewSlot } from './humanMockInterviewSlot.model.js';
 export { HumanMockInterviewBooking } from './humanMockInterviewBooking.model.js';
 export { HumanInterviewEvaluation } from './humanInterviewEvaluation.model.js';
 export { InstitutePolicy } from './institutePolicy.model.js';
+export { default as AmbassadorProfile } from './ambassadorProfile.model.js';
+export { default as AmbassadorCampaign } from './ambassadorCampaign.model.js';
+export { default as AmbassadorReferralCode } from './ambassadorReferralCode.model.js';
+export { default as ReferredParticipant } from './referredParticipant.model.js';
+export { default as AmbassadorCertificate } from './ambassadorCertificate.model.js';
+
 

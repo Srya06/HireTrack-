@@ -63,28 +63,34 @@ export const sanitizeAuditMetadata = (metadata = {}, allowedKeys = null) => {
 export const recordAuditEvent = async ({
   organizationId = null,
   actorId,
+  actor,
   action,
   entityType,
   entityId = null,
   resourceType,
   resourceId = null,
   metadata = {},
-  allowedMetadataKeys = null
+  allowedMetadataKeys = null,
+  ipAddress = null,
+  userAgent = null
 }) => {
   try {
+    const resolvedActorId = actorId || actor?._id || actor?.id;
     const resolvedEntityType = entityType || resourceType;
     const resolvedEntityId = entityId ?? resourceId ?? null;
     const sanitizedMetadata = sanitizeAuditMetadata(metadata, allowedMetadataKeys);
 
     const entry = await AuditLog.create({
       organizationId: organizationId || null,
-      actorId,
+      actorId: resolvedActorId,
       action,
       entityType: resolvedEntityType,
       entityId: resolvedEntityId,
       resourceType: resolvedEntityType,
       resourceId: resolvedEntityId,
-      metadata: sanitizedMetadata
+      metadata: sanitizedMetadata,
+      ipAddress: ipAddress || null,
+      userAgent: userAgent || null
     });
 
     return entry.toJSON();
@@ -93,6 +99,8 @@ export const recordAuditEvent = async ({
     return null;
   }
 };
+
+export const recordAuditLog = recordAuditEvent;
 
 /**
  * Retrieves paginated audit logs for ORG_ADMIN with filters.

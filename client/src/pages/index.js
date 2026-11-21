@@ -5,6 +5,7 @@ export { default as Register } from './public/Register.jsx';
 export { default as AcceptInvitation } from './public/AcceptInvitation.jsx';
 export { default as AccessDenied } from './public/AccessDenied.jsx';
 export { default as NotFound } from './public/NotFound.jsx';
+export { default as ReferralLanding } from './public/ReferralLanding.jsx';
 
 // Student
 export { default as StudentDashboard } from './student/StudentDashboard.jsx';
@@ -24,6 +25,7 @@ export { default as MockInterviewsLanding } from './student/MockInterviewsLandin
 export { default as AiInterviewChat } from './student/AiInterviewChat.jsx';
 export { default as AiInterviewFeedback } from './student/AiInterviewFeedback.jsx';
 export { default as StudentReadinessDashboard } from './student/StudentReadinessDashboard.jsx';
+export { default as StudentAmbassador } from './student/StudentAmbassador.jsx';
 
 // Recruiter
 export { default as RecruiterDashboard } from './recruiter/RecruiterDashboard.jsx';
@@ -43,6 +45,7 @@ export { default as AdminInterviewPolicy } from './admin/AdminInterviewPolicy.js
 export { default as AdminCohortReadiness } from './admin/AdminCohortReadiness.jsx';
 export { default as AdminReports } from './admin/AdminReports.jsx';
 export { default as AdminAuditLogs } from './admin/AdminAuditLogs.jsx';
+export { default as AdminAmbassadors } from './admin/AdminAmbassadors.jsx';
 export { default as PendingRecruiters } from './admin/PendingRecruiters.jsx';
 export { default as UserManagement } from './admin/UserManagement.jsx';
 export { default as JobModeration } from './admin/JobModeration.jsx';

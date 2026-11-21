@@ -5,6 +5,7 @@ import * as mockTestAttemptController from '../controllers/mockTestAttempt.contr
 import * as aiInterviewController from '../controllers/aiInterview.controller.js';
 import * as humanInterviewController from '../controllers/humanInterview.controller.js';
 import * as readinessController from '../controllers/readiness.controller.js';
+import * as ambassadorController from '../controllers/ambassador.controller.js';
 import { protect, authorizeRoles } from '../middleware/auth.middleware.js';
 import { attachOrganization } from '../middleware/org.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -84,6 +85,32 @@ router.get(
   protect,
   attachOrganization,
   readinessController.getStudentReadinessMe
+);
+
+// HireTrack v3 Student Ambassador Program (Chunk V11)
+router.post(
+  '/me/ambassador/apply',
+  protect,
+  attachOrganization,
+  ambassadorController.applyForAmbassador
+);
+router.get(
+  '/me/ambassador',
+  protect,
+  attachOrganization,
+  ambassadorController.getMyAmbassadorStatus
+);
+router.get(
+  '/me/ambassador/referrals',
+  protect,
+  attachOrganization,
+  ambassadorController.getMyReferrals
+);
+router.post(
+  '/me/ambassador/certificate/request',
+  protect,
+  attachOrganization,
+  ambassadorController.requestCertificateReview
 );
 
 // Route with explicit ID param (verifies resource ownership and role permissions)

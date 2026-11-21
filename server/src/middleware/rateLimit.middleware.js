@@ -30,3 +30,22 @@ export const apiRateLimiter = rateLimit({
   }
 });
 
+/**
+ * Public referral capture endpoint rate limiter
+ * Strictly rate-limited to prevent automated spam referral submissions
+ */
+export const createReferralCaptureRateLimiter = (options = {}) =>
+  rateLimit({
+    windowMs: options.windowMs || 60 * 1000,
+    max: options.max !== undefined ? options.max : env.isTest ? 100 : 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res, next) => {
+      next(ApiError.tooManyRequests('Too many referral submissions. Please wait before retrying.'));
+    },
+    ...options
+  });
+
+export const referralCaptureRateLimiter = createReferralCaptureRateLimiter();
+
+

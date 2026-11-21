@@ -28,6 +28,8 @@ import {
   AiInterviewChat,
   AiInterviewFeedback,
   StudentReadinessDashboard,
+  StudentAmbassador,
+  ReferralLanding,
   RecruiterDashboard,
   MyJobs,
   CreateEditJob,
@@ -42,6 +44,7 @@ import {
   AdminCohortReadiness,
   AdminReports,
   AdminAuditLogs,
+  AdminAmbassadors,
   StudentDirectory,
   PendingRecruiters,
   UserManagement,
@@ -64,6 +67,7 @@ export default function App() {
             <Route path="register" element={<Register />} />
             <Route path="invitation/accept" element={<AcceptInvitation />} />
             <Route path="set-password" element={<AcceptInvitation />} />
+            <Route path="referral" element={<ReferralLanding />} />
             <Route path="access-denied" element={<AccessDenied />} />
           </Route>
 
@@ -147,6 +151,10 @@ export default function App() {
             <Route
               path="readiness"
               element={<StudentReadinessDashboard />}
+            />
+            <Route
+              path="ambassador"
+              element={<StudentAmbassador />}
             />
           </Route>
 
@@ -277,6 +285,14 @@ export default function App() {
               element={
                 <MembershipRoute allowedMemberships={['ORG_ADMIN']}>
                   <AdminAuditLogs />
+                </MembershipRoute>
+              }
+            />
+            <Route
+              path="ambassadors"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN', 'AMBASSADOR_COORDINATOR']}>
+                  <AdminAmbassadors />
                 </MembershipRoute>
               }
             />

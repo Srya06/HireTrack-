@@ -14,5 +14,6 @@ export * as mockTestService from './mockTest.service.js';
 export * as aiInterviewService from './aiInterview.service.js';
 export { default as humanInterviewService } from './humanInterview.service.js';
 export { default as readinessService } from './readiness.service.js';
+export { default as ambassadorService } from './ambassador.service.js';
 export { default as api } from './api.js';
 

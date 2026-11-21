@@ -312,5 +312,37 @@ export const DEFAULT_MOCK_INTERVIEW_POLICY = Object.freeze({
   allowResumeView: true
 });
 
+// --- HireTrack v3 Campus Ambassadors Constants (Chunk V11) ---
+
+export const AMBASSADOR_PROFILE_STATUSES = Object.freeze({
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  SUSPENDED: 'SUSPENDED'
+});
+
+export const AMBASSADOR_CAMPAIGN_STATUSES = Object.freeze({
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  ARCHIVED: 'ARCHIVED'
+});
+
+export const REFERRED_PARTICIPANT_STATUSES = Object.freeze({
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  REJECTED: 'REJECTED',
+  DUPLICATE: 'DUPLICATE'
+});
+
+export const AMBASSADOR_CERTIFICATE_STATUSES = Object.freeze({
+  ELIGIBLE: 'ELIGIBLE',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  APPROVED: 'APPROVED',
+  ISSUED: 'ISSUED',
+  REJECTED: 'REJECTED'
+});
+
+
 
 
