@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as adminController from '../controllers/admin.controller.js';
+import * as jobApplicationController from '../controllers/jobApplication.controller.js';
 import { protect, authorizeRoles } from '../middleware/auth.middleware.js';
 import { attachOrganization, authorizeMemberships } from '../middleware/org.middleware.js';
 import { uploadCsvMiddleware } from '../middleware/upload.middleware.js';
@@ -92,6 +93,24 @@ router.patch(
   authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN, MEMBERSHIP_ROLES.PLACEMENT_COORDINATOR),
   validate(validateObjectId('id')),
   adminController.updateStudentByStaff
+);
+
+// --- Chunk V5: Student Application Tracking & Staff Reporting ---
+router.get(
+  '/applications',
+  protect,
+  attachOrganization,
+  authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN, MEMBERSHIP_ROLES.PLACEMENT_COORDINATOR),
+  jobApplicationController.getAdminReport
+);
+
+router.patch(
+  '/applications/:id/verification',
+  protect,
+  attachOrganization,
+  authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN, MEMBERSHIP_ROLES.PLACEMENT_COORDINATOR),
+  validate(validateObjectId('id')),
+  jobApplicationController.verifyStaff
 );
 
 export default router;

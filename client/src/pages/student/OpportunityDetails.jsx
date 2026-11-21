@@ -34,6 +34,28 @@ export default function OpportunityDetails() {
   const [evaluating, setEvaluating] = useState(false);
   const [evalError, setEvalError] = useState('');
 
+  // Application Tracking State (Chunk V5)
+  const [application, setApplication] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState('APPLIED');
+  const [notes, setNotes] = useState('');
+  const [isSavingStatus, setIsSavingStatus] = useState(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+
+  const fetchApplication = async () => {
+    try {
+      const res = await opportunityService.getStudentJobApplications();
+      const apps = res?.data?.data || res?.data || [];
+      const match = Array.isArray(apps) ? apps.find((a) => (a.jobOpportunityId?._id || a.jobOpportunityId) === id) : null;
+      if (match) {
+        setApplication(match);
+        setSelectedStatus(match.status);
+        setNotes(match.notes || '');
+      }
+    } catch {
+      // Ignore background load error
+    }
+  };
+
   const fetchDetails = async () => {
     setLoading(true);
     setError('');
@@ -75,7 +97,39 @@ export default function OpportunityDetails() {
   useEffect(() => {
     fetchDetails();
     fetchEligibility(false);
+    fetchApplication();
   }, [id]);
+
+  const handleSaveApplicationStatus = async () => {
+    if (!selectedStatus) return;
+    setIsSavingStatus(true);
+    setSaveSuccessMsg('');
+    try {
+      const res = await opportunityService.recordOpportunityApplicationStatus(id, {
+        status: selectedStatus,
+        notes
+      });
+      const saved = res?.data?.data || res?.data;
+      if (saved) {
+        setApplication(saved);
+        setSaveSuccessMsg('Application status updated successfully!');
+        setTimeout(() => setSaveSuccessMsg(''), 4000);
+      }
+    } catch (err) {
+      alert(err?.response?.data?.message || err.message || 'Failed to update application status');
+    } finally {
+      setIsSavingStatus(false);
+    }
+  };
+
+  const handleOpenExternalPortal = async () => {
+    try {
+      await opportunityService.recordOpportunityLinkClick(id);
+      fetchApplication();
+    } catch {
+      // Non-blocking click tracking
+    }
+  };
 
   if (loading) {
     return (
@@ -211,6 +265,7 @@ export default function OpportunityDetails() {
                 href={opportunity.applicationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={handleOpenExternalPortal}
                 className="w-full md:w-auto inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-colors"
               >
                 Open Official Application
@@ -238,6 +293,127 @@ export default function OpportunityDetails() {
               Verified by campus placement cell on{' '}
               {new Date(opportunity.lastVerifiedAt).toLocaleDateString()}.
             </span>
+          </div>
+        )}
+      </div>
+
+      {/* Student Application Status Tracking (Chunk V5) */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-900">Track Your Application</h3>
+              {application?.verificationStatus === 'VERIFIED' ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                  Verified by Staff
+                </span>
+              ) : application ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                  <Clock className="w-3.5 h-3.5 mr-1" />
+                  unverified (student-reported)
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                  Not Recorded Yet
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Keep your campus coordinators updated on your progress after submitting on the company portal.
+            </p>
+          </div>
+          <Link
+            to="/student/applications"
+            className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center"
+          >
+            My Applications &rarr;
+          </Link>
+        </div>
+
+        {/* Status choices */}
+        <div className="space-y-3">
+          <label className="block text-xs font-semibold text-slate-700">Application Status:</label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { id: 'INTERESTED', label: 'Interested', desc: 'Saved for later' },
+              { id: 'APPLIED', label: 'Applied', desc: 'Submitted externally' },
+              { id: 'NOT_PROCEEDING', label: 'Not Proceeding', desc: 'Decided not to apply' },
+              { id: 'WITHDRAWN', label: 'Withdrawn', desc: 'Application retracted' }
+            ].map((btn) => {
+              const isSelected = selectedStatus === btn.id;
+              return (
+                <button
+                  key={btn.id}
+                  type="button"
+                  onClick={() => setSelectedStatus(btn.id)}
+                  className={`p-3 text-left rounded-xl border transition-all ${
+                    isSelected
+                      ? 'border-indigo-600 bg-indigo-50/80 shadow-sm ring-1 ring-indigo-500'
+                      : 'border-slate-200 bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  <div className={`text-xs font-bold ${isSelected ? 'text-indigo-700' : 'text-slate-800'}`}>
+                    {btn.label}
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">{btn.desc}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Notes textarea */}
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs font-medium text-slate-600">
+                Notes / Reference (Optional, max 500 characters)
+              </label>
+              <span className={`text-[11px] ${notes.length >= 500 ? 'text-rose-600 font-bold' : 'text-slate-400'}`}>
+                {notes.length}/500
+              </span>
+            </div>
+            <textarea
+              rows={2}
+              value={notes}
+              maxLength={500}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Applied via Workday, requisition #5012; awaiting interview invitation."
+              className="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs text-emerald-600 font-medium">
+              {saveSuccessMsg}
+            </span>
+            <button
+              type="button"
+              disabled={isSavingStatus || !selectedStatus}
+              onClick={handleSaveApplicationStatus}
+              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm"
+            >
+              {isSavingStatus ? 'Recording...' : 'Update Application Status'}
+            </button>
+          </div>
+        </div>
+
+        {/* Embedded history if any */}
+        {application?.statusHistory?.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-slate-700 mb-2">Status Timeline</h4>
+            <div className="space-y-1.5">
+              {application.statusHistory.map((hist, idx) => (
+                <div key={idx} className="flex items-start justify-between text-xs bg-slate-50 p-2 rounded-lg border border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-800">{hist.status}</span>
+                    {hist.notes && <span className="text-slate-500 italic truncate max-w-xs">"{hist.notes}"</span>}
+                  </div>
+                  <span className="text-[11px] text-slate-400">
+                    {new Date(hist.changedAt).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

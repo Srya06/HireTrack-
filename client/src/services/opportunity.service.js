@@ -76,4 +76,32 @@ export const overrideEligibility = async (evaluationId, data) => {
   return response;
 };
 
+// --- Chunk V5 Application Tracking Endpoints ---
+
+export const recordOpportunityApplicationStatus = async (opportunityId, data) => {
+  const response = await api.post(`/opportunities/${opportunityId}/application-status`, data);
+  return response;
+};
+
+export const recordOpportunityLinkClick = async (opportunityId) => {
+  const response = await api.post(`/opportunities/${opportunityId}/application-link-click`);
+  return response;
+};
+
+export const getStudentJobApplications = async (params = {}) => {
+  const response = await api.get('/students/me/job-applications', { params });
+  return response;
+};
+
+export const getAdminApplicationsReport = async (params = {}) => {
+  const response = await api.get('/admin/applications', { params });
+  return response;
+};
+
+export const verifyApplicationStaff = async (applicationId, data) => {
+  const response = await api.patch(`/admin/applications/${applicationId}/verification`, data);
+  return response;
+};
+
+
 

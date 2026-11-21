@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import * as studentController from '../controllers/student.controller.js';
+import * as jobApplicationController from '../controllers/jobApplication.controller.js';
 import { protect, authorizeRoles } from '../middleware/auth.middleware.js';
+import { attachOrganization } from '../middleware/org.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { updateStudentProfileValidator } from '../validators/student.validator.js';
 import { uploadResumeMiddleware } from '../middleware/upload.middleware.js';
@@ -38,6 +40,14 @@ router.post(
   authorizeRoles(ROLES.STUDENT),
   uploadResumeMiddleware,
   studentController.uploadResume
+);
+
+// HireTrack v3 Student Self-Reported Applications (Chunk V5)
+router.get(
+  '/me/job-applications',
+  protect,
+  attachOrganization,
+  jobApplicationController.getMyApplications
 );
 
 // Route with explicit ID param (verifies resource ownership and role permissions)

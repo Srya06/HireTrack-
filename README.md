@@ -243,6 +243,36 @@ You can run the automated script with `npm run verify:demo` or follow these step
 
 ---
 
+## 🚀 HireTrack v3 Extension & Legacy Freeze Plan
+
+HireTrack v3 introduces an enterprise-grade multi-organization foundation, verified student directories with batch onboarding, institutional job opportunity management, deterministic advisory eligibility evaluations, and student-reported external application tracking—engineered additively on top of v1 without rewriting or breaking legacy capabilities.
+
+### 🚩 Feature Flags Configuration
+
+All v3 modules are governed by feature flags with runtime querying at `GET /api/v1/config/features`:
+
+| Flag | Default | Description |
+| :--- | :--- | :--- |
+| `V3_OPPORTUNITIES_ENABLED` | `true` | Enables institutional opportunities, eligibility engine, and student application tracking |
+| `LEGACY_RECRUITER_FLOW` | `false` | Retains v1 recruiter portal and direct in-app job applications for backward compatibility |
+| `V3_MOCK_TESTS_ENABLED` | `false` | Campus mock assessment module (reserved for future chunk) |
+| `V3_AI_INTERVIEWS_ENABLED` | `false` | AI interview simulation module (reserved for future chunk) |
+| `V3_HUMAN_INTERVIEWS_ENABLED` | `false` | Human interviewer scheduling and feedback (reserved for future chunk) |
+| `V3_READINESS_ENABLED` | `false` | Placement readiness scoring engine (reserved for future chunk) |
+| `V3_AMBASSADORS_ENABLED` | `false` | Student placement ambassador management (reserved for future chunk) |
+
+### 🔒 Legacy Freeze & Compatibility Mandate
+
+1. **Zero Deletions:** Legacy models (`Job`, `Application`, `Notification`, `AuditLog`) and endpoints (`/api/v1/jobs`, `/api/v1/applications`) remain completely untouched and operational.
+2. **Non-Colliding Routing:** v3 student application tracking endpoints are mounted at `/api/v1/opportunities/:id/application-status` and `/api/v1/students/me/job-applications`, preserving `/api/v1/applications` for legacy in-app recruiter pipelines.
+3. **Student-Reported Application Tracking (Chunk V5):**
+   - **Data Integrity:** Compound unique index on `(studentProfileId, jobOpportunityId)` guarantees exactly one active record per student per opportunity; subsequent updates append to `statusHistory[]` without duplicate submissions.
+   - **Labeling Standard:** All student-reported submissions are explicitly marked `unverified (student-reported)` across student and admin portals until staff verification.
+   - **Audit Compliance:** Placement coordinators verify student records with mandatory justification reasons via `PATCH /admin/applications/:id/verification`, persisting actor and reason to `AuditLog`.
+   - **External Portal Integration:** Non-gating click tracking via `POST /opportunities/:id/application-link-click` increments engagement counters without blocking external employer application links.
+
+---
+
 ## 📌 Known Limitations & Deferred Items (P1 / P2 Scope)
 
 In accordance with `DEVELOPMENT_ROADMAP.md` and the MVP charter:

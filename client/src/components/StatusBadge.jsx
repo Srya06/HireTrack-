@@ -3,6 +3,8 @@ import React from 'react';
 const STATUS_CONFIGS = {
   // Application Statuses
   applied: { label: 'Applied', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
+  interested: { label: 'Interested', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  not_proceeding: { label: 'Not Proceeding', bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-300' },
   under_review: { label: 'Under Review', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
   shortlisted: { label: 'Shortlisted', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
   interview_scheduled: { label: 'Interview Scheduled', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },

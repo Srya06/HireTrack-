@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as opportunityController from '../controllers/opportunity.controller.js';
 import * as eligibilityController from '../controllers/eligibility.controller.js';
+import * as jobApplicationController from '../controllers/jobApplication.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import { attachOrganization } from '../middleware/org.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -37,6 +38,23 @@ router.post(
   attachOrganization,
   validate(validateObjectId('id')),
   eligibilityController.evaluateEligibilityForOpportunity
+);
+
+// Student self-reported application status and external link click tracking (Chunk V5)
+router.post(
+  '/:id/application-status',
+  protect,
+  attachOrganization,
+  validate(validateObjectId('id')),
+  jobApplicationController.recordStatus
+);
+
+router.post(
+  '/:id/application-link-click',
+  protect,
+  attachOrganization,
+  validate(validateObjectId('id')),
+  jobApplicationController.recordLinkClick
 );
 
 export default router;

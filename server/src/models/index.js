@@ -11,4 +11,5 @@ export { OrganizationMembership } from './organizationMembership.model.js';
 export { FileAsset } from './fileAsset.model.js';
 export { JobOpportunity } from './jobOpportunity.model.js';
 export { EligibilityEvaluation } from './eligibilityEvaluation.model.js';
+export { JobApplication } from './jobApplication.model.js';
 

@@ -187,6 +187,21 @@ export const ELIGIBILITY_RESULT = Object.freeze({
 
 export const ELIGIBILITY_ENGINE_VERSION = '1';
 
+// --- HireTrack v3 Job Application Tracking Constants (Chunk V5) ---
+
+export const JOB_APPLICATION_STATUSES = Object.freeze({
+  INTERESTED: 'INTERESTED',
+  APPLIED: 'APPLIED',
+  NOT_PROCEEDING: 'NOT_PROCEEDING',
+  WITHDRAWN: 'WITHDRAWN'
+});
+
+export const JOB_APPLICATION_VERIFICATION = Object.freeze({
+  UNVERIFIED: 'UNVERIFIED',
+  VERIFIED: 'VERIFIED'
+});
+
+
 
 
 

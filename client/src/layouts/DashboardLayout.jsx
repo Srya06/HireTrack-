@@ -118,7 +118,10 @@ export default function DashboardLayout() {
       : []),
     ...(hasOrgAdmin ? [{ name: 'User Management', to: '/admin/users', icon: Users }] : []),
     ...(flags.V3_OPPORTUNITIES_ENABLED && (hasOrgAdmin || hasPlacementCoordinator)
-      ? [{ name: 'Opportunities', to: '/admin/opportunities', icon: Briefcase }]
+      ? [
+          { name: 'Opportunities', to: '/admin/opportunities', icon: Briefcase },
+          { name: 'Applications Report', to: '/admin/applications', icon: FileText }
+        ]
       : hasOrgAdmin || hasPlacementCoordinator
       ? [{ name: 'Job Moderation', to: '/admin/jobs', icon: Briefcase }]
       : []),

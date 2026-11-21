@@ -58,9 +58,9 @@ export default function ApplicationTimeline({ history = [], currentStatus = 'app
                         {new Date(item.changedAt).toLocaleString()}
                       </span>
                     </div>
-                    {item.note && (
+                    {(item.notes || item.note) && (
                       <p className="mt-1.5 text-xs text-slate-600 bg-slate-50 border border-slate-100 rounded-md p-2">
-                        {item.note}
+                        {item.notes || item.note}
                       </p>
                     )}
                   </div>

@@ -27,6 +27,7 @@ import {
   RecruiterProfile,
   AdminDashboard,
   AdminOpportunities,
+  AdminApplications,
   StudentDirectory,
   PendingRecruiters,
   UserManagement,
@@ -145,6 +146,14 @@ export default function App() {
               element={
                 <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
                   <AdminOpportunities />
+                </MembershipRoute>
+              }
+            />
+            <Route
+              path="applications"
+              element={
+                <MembershipRoute allowedMemberships={['ORG_ADMIN', 'PLACEMENT_COORDINATOR']}>
+                  <AdminApplications />
                 </MembershipRoute>
               }
             />

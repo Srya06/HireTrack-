@@ -28,6 +28,7 @@ export { default as RecruiterProfile } from './recruiter/RecruiterProfile.jsx';
 export { default as AdminDashboard } from './admin/AdminDashboard.jsx';
 export { default as StudentDirectory } from './admin/StudentDirectory.jsx';
 export { default as AdminOpportunities } from './admin/AdminOpportunities.jsx';
+export { default as AdminApplications } from './admin/AdminApplications.jsx';
 export { default as PendingRecruiters } from './admin/PendingRecruiters.jsx';
 export { default as UserManagement } from './admin/UserManagement.jsx';
 export { default as JobModeration } from './admin/JobModeration.jsx';
