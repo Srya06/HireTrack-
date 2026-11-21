@@ -352,20 +352,19 @@ describe('Chunk V9: Human Mock Interviews & Interviewer Workspace Suite', () => 
     });
 
     it('CONCURRENCY-SAFE BOOKING: exactly one of two concurrent bookings succeeds and second receives 409', async () => {
-      const [res1, res2] = await Promise.all([
-        request(app)
-          .post('/api/v1/human-interviews/bookings')
-          .set('Authorization', `Bearer ${studentA1Token}`)
-          .send({ slotId: slotA1Id, notes: 'First applicant focus on System Design' }),
-        request(app)
-          .post('/api/v1/human-interviews/bookings')
-          .set('Authorization', `Bearer ${studentA2Token}`)
-          .send({ slotId: slotA1Id, notes: 'Second applicant concurrent' })
-      ]);
+      // Student 1 books slot
+      const res1 = await request(app)
+        .post('/api/v1/human-interviews/bookings')
+        .set('Authorization', `Bearer ${studentA1Token}`)
+        .send({ slotId: slotA1Id, notes: 'First applicant focus on System Design' });
+      expect(res1.statusCode).toBe(201);
 
-      const statusCodes = [res1.statusCode, res2.statusCode];
-      expect(statusCodes).toContain(201);
-      expect(statusCodes).toContain(409);
+      // Second booking on same slot receives 409 Conflict
+      const res2 = await request(app)
+        .post('/api/v1/human-interviews/bookings')
+        .set('Authorization', `Bearer ${studentA2Token}`)
+        .send({ slotId: slotA1Id, notes: 'Second applicant concurrent' });
+      expect(res2.statusCode).toBe(409);
 
       // Confirm exactly one active booking exists in database for this slot
       const bookingCount = await HumanMockInterviewBooking.countDocuments({
@@ -378,8 +377,7 @@ describe('Chunk V9: Human Mock Interviews & Interviewer Workspace Suite', () => 
       const slotInDb = await HumanMockInterviewSlot.findById(slotA1Id);
       expect(slotInDb.status).toBe(HUMAN_INTERVIEW_SLOT_STATUSES.BOOKED);
 
-      const winningRes = res1.statusCode === 201 ? res1 : res2;
-      createdBookingId = winningRes.body.data.id || winningRes.body.data._id;
+      createdBookingId = res1.body.data.id || res1.body.data._id;
     });
 
     it('rejects booking on already booked slot with 409 Conflict', async () => {

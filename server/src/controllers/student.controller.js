@@ -56,3 +56,12 @@ export const updateMeProfileV3 = asyncHandler(async (req, res) => {
   });
 });
 
+export const exportMyData = asyncHandler(async (req, res) => {
+  const result = await studentService.exportStudentData(req.user._id);
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: 'Student data exported successfully',
+    data: result
+  });
+});
+

@@ -463,3 +463,60 @@ export const updateStudentByStaff = async (
 
   return profile.toJSON();
 };
+
+export const exportStudentData = async (userId) => {
+  const user = await User.findById(userId).select('-passwordHash');
+  if (!user) {
+    throw ApiError.notFound('User not found');
+  }
+
+  const profile = await StudentProfile.findOne({ userId });
+  let applications = [];
+  let mockAttempts = [];
+  let aiSessions = [];
+  let humanBookings = [];
+  let ambassador = null;
+
+  if (profile) {
+    const {
+      JobApplication,
+      MockTestAttempt,
+      AiMockInterviewSession,
+      HumanMockInterviewBooking,
+      AmbassadorProfile
+    } = await import('../models/index.js');
+
+    applications = await JobApplication.find({ studentProfileId: profile._id });
+    mockAttempts = await MockTestAttempt.find({ studentProfileId: profile._id })
+      .select('-questionOrder -optionOrder -scoringSnapshot');
+    aiSessions = await AiMockInterviewSession.find({ studentProfileId: profile._id })
+      .select('-evaluation');
+    humanBookings = await HumanMockInterviewBooking.find({ studentProfileId: profile._id });
+    ambassador = await AmbassadorProfile.findOne({ studentProfileId: profile._id });
+  }
+
+  // Audit export
+  await recordAuditEvent({
+    organizationId: profile?.organizationId || null,
+    actorId: user._id,
+    action: 'STUDENT_DATA_EXPORTED',
+    entityType: 'StudentProfile',
+    entityId: profile?._id || user._id,
+    metadata: {
+      userId: user._id,
+      applicationCount: applications.length,
+      mockAttemptCount: mockAttempts.length
+    }
+  });
+
+  return {
+    exportedAt: new Date().toISOString(),
+    user: user.toJSON(),
+    profile: profile ? profile.toJSON() : null,
+    applications: applications.map((a) => (a.toJSON ? a.toJSON() : a)),
+    mockTestAttempts: mockAttempts.map((m) => (m.toJSON ? m.toJSON() : m)),
+    aiInterviewSessions: aiSessions.map((s) => (s.toJSON ? s.toJSON() : s)),
+    humanMockBookings: humanBookings.map((b) => (b.toJSON ? b.toJSON() : b)),
+    ambassador: ambassador ? (ambassador.toJSON ? ambassador.toJSON() : ambassador) : null
+  };
+};

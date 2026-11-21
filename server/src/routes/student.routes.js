@@ -47,6 +47,14 @@ router.post(
   studentController.uploadResume
 );
 
+// Student Data Privacy / Portability Export (Chunk V12)
+router.get(
+  '/me/data-export',
+  protect,
+  authorizeRoles(ROLES.STUDENT),
+  studentController.exportMyData
+);
+
 // HireTrack v3 Student Self-Reported Applications (Chunk V5)
 router.get(
   '/me/job-applications',

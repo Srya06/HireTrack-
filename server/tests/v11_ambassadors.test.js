@@ -570,22 +570,13 @@ describe('Chunk V11: Campus Ambassadors & Referral Lifecycle Suite', () => {
     });
 
     it('denies certificate approval when an ambassador attempts to approve their own certificate', async () => {
-      // Fake studentA1 having coordinator role or studentA2 attempting self certificate approval
-      const fakeCert = await AmbassadorCertificate.create({
-        organizationId: orgA._id,
-        ambassadorProfileId: ambassadorProfileA1._id,
-        campaignId: activeCampaignA._id,
-        status: AMBASSADOR_CERTIFICATE_STATUSES.UNDER_REVIEW
-      });
-
       // Student A1 attempting to approve certificate under their own profile:
       const res = await request(app)
-        .patch(`/api/v1/admin/ambassadors/certificates/${fakeCert._id}/status`)
+        .patch(`/api/v1/admin/ambassadors/certificates/${certificateId}/status`)
         .set('Authorization', `Bearer ${studentA1Token}`)
         .send({ status: AMBASSADOR_CERTIFICATE_STATUSES.APPROVED });
 
       expect([403, 401]).toContain(res.status);
-      await AmbassadorCertificate.findByIdAndDelete(fakeCert._id);
     });
 
     it('coordinator approves and issues certificate with unique certificate number and object key', async () => {

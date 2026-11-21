@@ -251,15 +251,33 @@ HireTrack v3 introduces an enterprise-grade multi-organization foundation, verif
 
 All v3 modules are governed by feature flags with runtime querying at `GET /api/v1/config/features`:
 
-| Flag | Default | Description |
+| Flag | Recommended Pilot Value | Description |
 | :--- | :--- | :--- |
 | `V3_OPPORTUNITIES_ENABLED` | `true` | Enables institutional opportunities, eligibility engine, and student application tracking |
-| `LEGACY_RECRUITER_FLOW` | `false` | Retains v1 recruiter portal and direct in-app job applications for backward compatibility |
-| `V3_MOCK_TESTS_ENABLED` | `false` | Campus mock assessment module (reserved for future chunk) |
-| `V3_AI_INTERVIEWS_ENABLED` | `false` | AI interview simulation module (reserved for future chunk) |
-| `V3_HUMAN_INTERVIEWS_ENABLED` | `false` | Human interviewer scheduling and feedback (reserved for future chunk) |
-| `V3_READINESS_ENABLED` | `false` | Placement readiness scoring engine (reserved for future chunk) |
-| `V3_AMBASSADORS_ENABLED` | `false` | Student placement ambassador management (reserved for future chunk) |
+| `V3_MOCK_TESTS_ENABLED` | `true` | Campus mock assessment module (Single Choice, Multi-Select, Short Answer with auto-grading) |
+| `V3_AI_INTERVIEWS_ENABLED` | `true` | AI interview simulation module (structured rubric scoring, bounded turns) |
+| `V3_HUMAN_MOCK_ENABLED` | `true` | Human mock interviewer slot scheduling and audited evaluation release |
+| `V3_READINESS_ENABLED` | `true` | Placement readiness dashboard and transparent domain gap summaries |
+| `V3_AMBASSADORS_ENABLED` | `true` | Student placement ambassador management, deduplicated referrals, and certification |
+| `LEGACY_RECRUITER_FLOW` | `false` | Hides legacy recruiter portal from navigation while preserving backend APIs |
+| `ALLOW_PUBLIC_STUDENT_SIGNUP` | `false` | Disables open self-signup; onboards students via verified staff CSV batch import |
+
+### 🛠️ Operation & Hardening CLI Tools (Chunk V12)
+
+| Command | Description |
+| :--- | :--- |
+| `npm run seed:v3-demo` | Seeds synthetic institutional demo dataset (Org, Staff, Students, Opportunities, Tests, Ambassadors - 0 real PII) |
+| `npm run privacy:retention` | Scans expired transcripts, answers, and audit logs according to retention policy (add `--execute` to purge) |
+| `npm run perf:audit` | Runs index and query execution benchmark (`explain('executionStats')`) across critical collections |
+| `npm run backup` | Exports JSON snapshots and schema manifest for all collections to `backups/` |
+| `npm run restore -- --dir <path>` | Verifies and restores database records from a backup snapshot (add `--execute` to restore live) |
+
+### 📚 Operational Runbooks & Governance Documentation
+
+- [Backup, Restore, Rollback & Deployment Runbook](file:///c:/Users/rajat/Downloads/HireTrack_Documentation_Pack/docs/v3/BACKUP_ROLLBACK_PLAN.md)
+- [Data Privacy, Protection & Retention Policy](file:///c:/Users/rajat/Downloads/HireTrack_Documentation_Pack/docs/v3/DATA_PRIVACY_RETENTION.md)
+- [Pilot Rollout Strategy & Legacy Architecture Decision](file:///c:/Users/rajat/Downloads/HireTrack_Documentation_Pack/docs/v3/PILOT_ROLLOUT_DECISION.md)
+- [SRS Section 8 Acceptance Criteria Report & UAT Checklist](file:///c:/Users/rajat/Downloads/HireTrack_Documentation_Pack/docs/v3/UAT_CHECKLIST_ACCEPTANCE_REPORT.md)
 
 ### 🔒 Legacy Freeze & Compatibility Mandate
 

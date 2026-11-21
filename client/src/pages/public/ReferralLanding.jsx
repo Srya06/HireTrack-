@@ -58,7 +58,7 @@ export default function ReferralLanding() {
         <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
           <Award className="w-6 h-6" />
         </div>
-        <h2 className="text-2xl font-extrabold text-slate-900">Campus Placement Outreach</h2>
+        <h1 className="text-2xl font-extrabold text-slate-900">Campus Placement Outreach</h1>
         <p className="text-xs text-slate-500">
           Join your campus peer network for structured technical interview practice and placement readiness.
         </p>
@@ -73,11 +73,10 @@ export default function ReferralLanding() {
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900">Referral Submission Received</h3>
-                <p className="text-xs text-slate-600 mt-1">{resultMsg}</p>
+                <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                  {resultMsg}
+                </p>
               </div>
-              <p className="text-[11px] text-slate-400">
-                The campus ambassador coordinator will verify your participation details against your institute register.
-              </p>
               <Button size="sm" variant="outline" onClick={() => setSubmitted(false)}>
                 Submit Another Referral
               </Button>
@@ -92,10 +91,11 @@ export default function ReferralLanding() {
               )}
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor="referral-code" className="block font-semibold text-slate-700 mb-1">
                   Ambassador Referral Code *
                 </label>
                 <input
+                  id="referral-code"
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -106,12 +106,13 @@ export default function ReferralLanding() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor="full-name" className="block font-semibold text-slate-700 mb-1">
                   Full Name *
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                   <input
+                    id="full-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -124,12 +125,13 @@ export default function ReferralLanding() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor="email-address" className="block font-semibold text-slate-700 mb-1">
                     Email Address *
                   </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                     <input
+                      id="email-address"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -141,12 +143,13 @@ export default function ReferralLanding() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
+                  <label htmlFor="phone-number" className="block font-semibold text-slate-700 mb-1">
                     Phone Number *
                   </label>
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                     <input
+                      id="phone-number"
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -159,12 +162,13 @@ export default function ReferralLanding() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor="institute-name" className="block font-semibold text-slate-700 mb-1">
                   College / Institute Name *
                 </label>
                 <div className="relative">
                   <Building2 className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                   <input
+                    id="institute-name"
                     type="text"
                     value={institute}
                     onChange={(e) => setInstitute(e.target.value)}
@@ -176,10 +180,11 @@ export default function ReferralLanding() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
+                <label htmlFor="candidate-notes" className="block font-semibold text-slate-700 mb-1">
                   Optional Preparation Goals / Notes
                 </label>
                 <textarea
+                  id="candidate-notes"
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -189,15 +194,19 @@ export default function ReferralLanding() {
               </div>
 
               <div className="pt-2">
-                <Button type="submit" loading={loading} className="w-full flex items-center justify-center gap-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={loading}
+                  className="w-full flex items-center justify-center gap-2"
+                >
                   <Send className="w-4 h-4" />
                   <span>Submit Participation Record</span>
                 </Button>
               </div>
 
               <p className="text-[10px] text-slate-400 text-center pt-2">
-                By submitting, your details will be verified by the campus placement coordinator.
-                No fees or automated placement promises are offered.
+                By submitting, your details will be verified by the campus placement coordinator. No fees or automated placement promises are offered.
               </p>
             </form>
           )}
@@ -206,4 +215,3 @@ export default function ReferralLanding() {
     </div>
   );
 }
-

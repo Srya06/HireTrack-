@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as adminController from '../controllers/admin.controller.js';
 import * as jobApplicationController from '../controllers/jobApplication.controller.js';
+import * as policyAdminController from '../controllers/policyAdmin.controller.js';
 import { protect, authorizeRoles } from '../middleware/auth.middleware.js';
 import { attachOrganization, authorizeMemberships } from '../middleware/org.middleware.js';
 import { uploadCsvMiddleware } from '../middleware/upload.middleware.js';
@@ -111,6 +112,23 @@ router.patch(
   authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN, MEMBERSHIP_ROLES.PLACEMENT_COORDINATOR),
   validate(validateObjectId('id')),
   jobApplicationController.verifyStaff
+);
+
+// --- Chunk V12: Institute Data Retention Policies ---
+router.get(
+  '/policies/retention',
+  protect,
+  attachOrganization,
+  authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN),
+  policyAdminController.getRetentionPolicy
+);
+
+router.patch(
+  '/policies/retention',
+  protect,
+  attachOrganization,
+  authorizeMemberships(MEMBERSHIP_ROLES.ORG_ADMIN),
+  policyAdminController.updateRetentionPolicy
 );
 
 export default router;

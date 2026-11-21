@@ -15,31 +15,57 @@ const FORBIDDEN_METADATA_KEYS = new Set([
   'correctanswer'
 ]);
 
+const SENSITIVE_KEY_PATTERNS = [
+  /password/i,
+  /token/i,
+  /secret/i,
+  /transcript/i,
+  /resume/i,
+  /answerkey/i,
+  /correctoption/i,
+  /correctanswer/i
+];
+
+export const isSensitiveAuditKey = (key = '') => {
+  const lower = String(key).toLowerCase();
+  if (FORBIDDEN_METADATA_KEYS.has(lower)) return true;
+  return SENSITIVE_KEY_PATTERNS.some((pat) => pat.test(lower));
+};
+
 /**
- * Sanitizes audit metadata by allowlisting shallow non-sensitive keys and
- * stripping any secret, credential, resume, transcript, or answer-key fields.
+ * Sanitizes audit metadata by recursively stripping any secret,
+ * credential, resume, transcript, or answer-key fields.
  *
  * @param {object} metadata
  * @param {string[]|null} [allowedKeys=null]
  * @returns {object}
  */
 export const sanitizeAuditMetadata = (metadata = {}, allowedKeys = null) => {
-  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+  if (!metadata || typeof metadata !== 'object') {
     return {};
+  }
+  if (Array.isArray(metadata)) {
+    return metadata
+      .map((item) => (typeof item === 'object' && item !== null ? sanitizeAuditMetadata(item) : item))
+      .filter((item) => item !== undefined);
   }
 
   const allowSet = Array.isArray(allowedKeys) ? new Set(allowedKeys) : null;
   const sanitized = {};
 
   for (const [key, value] of Object.entries(metadata)) {
-    if (FORBIDDEN_METADATA_KEYS.has(key.toLowerCase())) {
+    if (isSensitiveAuditKey(key)) {
       continue;
     }
     if (allowSet && !allowSet.has(key)) {
       continue;
     }
     if (value !== undefined) {
-      sanitized[key] = value;
+      if (value && typeof value === 'object') {
+        sanitized[key] = sanitizeAuditMetadata(value);
+      } else {
+        sanitized[key] = value;
+      }
     }
   }
 
