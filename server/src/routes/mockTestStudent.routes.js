@@ -9,6 +9,7 @@ import { MockTest } from '../models/index.js';
 import { scopeOrg, paginateInOrg, findByIdInOrg } from '../utils/orgScope.js';
 import { MOCK_TEST_STATUSES, ERROR_CODES } from '../utils/constants.js';
 import { ApiError } from '../utils/ApiError.js';
+import * as mockTestAttemptController from '../controllers/mockTestAttempt.controller.js';
 
 const router = Router();
 
@@ -94,4 +95,14 @@ router.get(
   })
 );
 
+/**
+ * Start or resume a test attempt (Chunk V7)
+ */
+router.post(
+  '/:id/attempts',
+  validate(validateObjectId('id')),
+  mockTestAttemptController.startOrResumeAttempt
+);
+
 export default router;
+

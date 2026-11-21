@@ -61,3 +61,4 @@ questionBankSchema.index({ organizationId: 1, categoryId: 1, status: 1 });
 questionBankSchema.index({ organizationId: 1, name: 1 });
 
 export const QuestionBank = mongoose.model('QuestionBank', questionBankSchema);
+

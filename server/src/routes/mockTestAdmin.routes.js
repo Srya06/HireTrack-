@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as mockTestController from '../controllers/mockTest.controller.js';
+import * as mockTestAttemptController from '../controllers/mockTestAttempt.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import { attachOrganization, authorizeMemberships } from '../middleware/org.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -110,4 +111,10 @@ router.get(
   mockTestController.getPreview
 );
 
+// ==========================================
+// 5. Reports Endpoints (Chunk V7)
+// ==========================================
+router.get('/reports/mock-tests', mockTestAttemptController.getAdminMockTestReport);
+
 export default router;
+

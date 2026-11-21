@@ -55,3 +55,4 @@ testCategorySchema.virtual('orgId').get(function () {
 testCategorySchema.index({ organizationId: 1, slug: 1 }, { unique: true });
 
 export const TestCategory = mongoose.model('TestCategory', testCategorySchema);
+

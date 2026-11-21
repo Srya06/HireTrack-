@@ -238,3 +238,13 @@ export const QUESTION_SELECTION_MODES = Object.freeze({
   RANDOM_FROM_BANK: 'RANDOM_FROM_BANK'
 });
 
+// --- HireTrack v3 Mock Test Attempt Lifecycle Constants (Chunk V7) ---
+
+export const MOCK_TEST_ATTEMPT_STATUSES = Object.freeze({
+  IN_PROGRESS: 'IN_PROGRESS',
+  SUBMITTED: 'SUBMITTED',
+  TIMED_OUT: 'TIMED_OUT',
+  EVALUATED: 'EVALUATED'
+});
+
+

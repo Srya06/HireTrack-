@@ -158,3 +158,4 @@ questionSchema.index({ organizationId: 1, difficulty: 1 });
 questionSchema.index({ organizationId: 1, topicTags: 1 });
 
 export const Question = mongoose.model('Question', questionSchema);
+

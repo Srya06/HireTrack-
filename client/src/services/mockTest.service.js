@@ -119,3 +119,41 @@ export const getStudentMockTestById = async (id) => {
   const response = await api.get(`/mock-tests/${id}`);
   return response;
 };
+
+// --- Chunk V7: Attempt Lifecycle Endpoints ---
+
+export const startOrResumeAttempt = async (testId) => {
+  const response = await api.post(`/mock-tests/${testId}/attempts`);
+  return response;
+};
+
+export const getAttemptDetails = async (attemptId) => {
+  const response = await api.get(`/mock-test-attempts/${attemptId}`);
+  return response;
+};
+
+export const saveAnswer = async (attemptId, questionId, data) => {
+  const response = await api.put(`/mock-test-attempts/${attemptId}/answers/${questionId}`, data);
+  return response;
+};
+
+export const submitAttempt = async (attemptId, data = {}, headers = {}) => {
+  const response = await api.post(`/mock-test-attempts/${attemptId}/submit`, data, { headers });
+  return response;
+};
+
+export const getAttemptResult = async (attemptId) => {
+  const response = await api.get(`/mock-test-attempts/${attemptId}/result`);
+  return response;
+};
+
+export const getStudentMockTestHistory = async (params = {}) => {
+  const response = await api.get('/students/me/mock-test-history', { params });
+  return response;
+};
+
+export const getAdminMockTestReport = async (params = {}) => {
+  const response = await api.get('/admin/reports/mock-tests', { params });
+  return response;
+};
+

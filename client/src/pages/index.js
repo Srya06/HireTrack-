@@ -16,6 +16,10 @@ export { default as StudentEligibility } from './student/StudentEligibility.jsx'
 export { default as MyApplications } from './student/MyApplications.jsx';
 export { default as ApplicationDetails } from './student/ApplicationDetails.jsx';
 export { default as StudentProfile } from './student/StudentProfile.jsx';
+export { default as MockTestsCatalogue } from './student/MockTestsCatalogue.jsx';
+export { default as MockTestInstructions } from './student/MockTestInstructions.jsx';
+export { default as MockTestPlayer } from './student/MockTestPlayer.jsx';
+export { default as MockTestResult } from './student/MockTestResult.jsx';
 
 // Recruiter
 export { default as RecruiterDashboard } from './recruiter/RecruiterDashboard.jsx';

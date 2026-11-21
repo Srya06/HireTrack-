@@ -16,4 +16,6 @@ export { TestCategory } from './testCategory.model.js';
 export { QuestionBank } from './questionBank.model.js';
 export { Question } from './question.model.js';
 export { MockTest } from './mockTest.model.js';
+export { MockTestAttempt } from './mockTestAttempt.model.js';
+export { MockTestAnswer } from './mockTestAnswer.model.js';
 

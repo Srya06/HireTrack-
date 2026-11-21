@@ -20,6 +20,10 @@ import {
   MyApplications,
   ApplicationDetails,
   StudentProfile,
+  MockTestsCatalogue,
+  MockTestInstructions,
+  MockTestPlayer,
+  MockTestResult,
   RecruiterDashboard,
   MyJobs,
   CreateEditJob,
@@ -74,6 +78,38 @@ export default function App() {
             <Route path="applications" element={<MyApplications />} />
             <Route path="applications/:applicationId" element={<ApplicationDetails />} />
             <Route path="profile" element={<StudentProfile />} />
+            <Route
+              path="mock-tests"
+              element={
+                <FeatureFlagRoute flag="V3_MOCK_TESTS_ENABLED">
+                  <MockTestsCatalogue />
+                </FeatureFlagRoute>
+              }
+            />
+            <Route
+              path="mock-tests/:id"
+              element={
+                <FeatureFlagRoute flag="V3_MOCK_TESTS_ENABLED">
+                  <MockTestInstructions />
+                </FeatureFlagRoute>
+              }
+            />
+            <Route
+              path="mock-tests/attempts/:attemptId"
+              element={
+                <FeatureFlagRoute flag="V3_MOCK_TESTS_ENABLED">
+                  <MockTestPlayer />
+                </FeatureFlagRoute>
+              }
+            />
+            <Route
+              path="mock-tests/attempts/:attemptId/result"
+              element={
+                <FeatureFlagRoute flag="V3_MOCK_TESTS_ENABLED">
+                  <MockTestResult />
+                </FeatureFlagRoute>
+              }
+            />
           </Route>
 
           {/* Legacy Recruiter Protected Routes (reachable ONLY while LEGACY_RECRUITER_FLOW is true) */}
