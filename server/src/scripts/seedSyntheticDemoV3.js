@@ -29,6 +29,7 @@ import {
   JOB_APPLICATION_STATUSES,
   QUESTION_TYPES,
   MOCK_TEST_STATUSES,
+  MOCK_TEST_REVIEW_POLICIES,
   AMBASSADOR_PROFILE_STATUSES,
   AMBASSADOR_CAMPAIGN_STATUSES,
   REFERRED_PARTICIPANT_STATUSES
@@ -176,7 +177,7 @@ export const seedSyntheticDemoV3 = async () => {
       cohort: '2022-2026',
       graduationYear: 2026,
       cgpa: 7.8,
-      verificationStatus: 'pending'
+      verificationStatus: 'unverified'
     }
   ];
 
@@ -247,7 +248,7 @@ export const seedSyntheticDemoV3 = async () => {
         },
         {
           type: 'MIN_CGPA',
-          operator: 'GTE',
+          operator: 'GREATER_EQUAL',
           value: 8.0,
           displayLabel: 'Minimum CGPA 8.0'
         }
@@ -304,7 +305,7 @@ export const seedSyntheticDemoV3 = async () => {
     });
   }
 
-  let sampleQ = await Question.findOne({ organizationId: org._id, questionBankId: bank._id });
+  let sampleQ = await Question.findOne({ organizationId: org._id, bankId: bank._id });
   if (!sampleQ) {
     sampleQ = await Question.create({
       organizationId: org._id,
@@ -333,20 +334,26 @@ export const seedSyntheticDemoV3 = async () => {
       description: '30-minute diagnostic assessment covering database concurrency, networking protocols, and system design.',
       durationMinutes: 30,
       instructions: '1. Negative marking is active. 2. Autosave operates on answer selection.',
-      questionSelectionConfig: [
+      sections: [
         {
-          questionBankId: bank._id,
-          count: 1,
-          difficulty: 'MEDIUM'
+          sectionId: 'sec-1',
+          name: 'Core CS & System Concurrency',
+          marksPerQuestion: 2,
+          negativeMarksPerQuestion: 0.5,
+          questionSelectionConfig: {
+            bankId: bank._id,
+            count: 1
+          }
         }
       ],
       scoringConfig: {
-        totalMarks: 2,
-        passingPercentage: 50,
-        negativeMarking: true
+        defaultCorrectMarks: 2,
+        enableNegativeMarking: true,
+        defaultNegativeMarks: 0.5,
+        passMarks: 1
       },
       attemptLimit: 3,
-      reviewPolicy: 'IMMEDIATE_WITH_ANSWERS',
+      reviewPolicy: MOCK_TEST_REVIEW_POLICIES.IMMEDIATE,
       status: MOCK_TEST_STATUSES.PUBLISHED,
       version: 1,
       createdBy: placementUser._id
@@ -359,6 +366,7 @@ export const seedSyntheticDemoV3 = async () => {
   if (!aiTrack) {
     aiTrack = await InterviewTrack.create({
       organizationId: org._id,
+      title: 'Full-Stack Software Engineer AI Interview',
       slug: 'full-stack-track',
       interviewType: 'AI',
       roleCategory: 'Full-Stack Software Engineer',
@@ -368,11 +376,12 @@ export const seedSyntheticDemoV3 = async () => {
         maxTurnChars: 1000
       },
       rubricConfig: [
-        { dimension: 'Technical Depth', weight: 40, description: 'Soundness of architectural choices' },
-        { dimension: 'Clarity of Thought', weight: 30, description: 'Structured communication' },
-        { dimension: 'Problem Solving', weight: 30, description: 'Tradeoff evaluation' }
+        { dimension: 'Technical Depth', maxScore: 10, description: 'Soundness of architectural choices' },
+        { dimension: 'Clarity of Thought', maxScore: 10, description: 'Structured communication' },
+        { dimension: 'Problem Solving', maxScore: 10, description: 'Tradeoff evaluation' }
       ],
-      status: 'ACTIVE'
+      status: 'ACTIVE',
+      createdBy: placementUser._id
     });
     console.log('  ✔ Created AI Interview Track: Full-Stack Software Engineer');
   }
@@ -431,30 +440,37 @@ export const seedSyntheticDemoV3 = async () => {
       });
 
       const refCode = 'HT-DIYA2026';
-      await AmbassadorReferralCode.create({
-        organizationId: org._id,
-        ambassadorProfileId: ambProfile._id,
-        campaignId: campaign._id,
-        code: refCode,
-        active: true
-      });
+      let referralCodeDoc = await AmbassadorReferralCode.findOne({ code: refCode });
+      if (!referralCodeDoc) {
+        referralCodeDoc = await AmbassadorReferralCode.create({
+          organizationId: org._id,
+          ambassadorProfileId: ambProfile._id,
+          campaignId: campaign._id,
+          code: refCode,
+          active: true
+        });
+      }
 
       // Seed 2 masked participants
       const hash1 = crypto.createHash('sha256').update(`${campaign._id}:participant1@synthetic.edu`).digest('hex');
-      await ReferredParticipant.create({
-        organizationId: org._id,
-        campaignId: campaign._id,
-        codeId: refCode,
-        name: 'Johnathan Smith',
-        email: 'johnathan.smith@synthetic.edu',
-        phone: '9988776655',
-        institute: 'City Engineering College',
-        dedupeKey: hash1,
-        verificationStatus: REFERRED_PARTICIPANT_STATUSES.VERIFIED,
-        reason: 'Contact verified by coordinator',
-        verifiedBy: ambassadorCoordUser._id,
-        verifiedAt: new Date()
-      });
+      let part1 = await ReferredParticipant.findOne({ organizationId: org._id, dedupeKey: hash1 });
+      if (!part1) {
+        await ReferredParticipant.create({
+          organizationId: org._id,
+          campaignId: campaign._id,
+          ambassadorProfileId: ambProfile._id,
+          codeId: referralCodeDoc._id,
+          name: 'Johnathan Smith',
+          email: 'johnathan.smith@synthetic.edu',
+          phone: '9988776655',
+          institute: 'City Engineering College',
+          dedupeKey: hash1,
+          verificationStatus: REFERRED_PARTICIPANT_STATUSES.VERIFIED,
+          reason: 'Contact verified by coordinator',
+          verifiedBy: ambassadorCoordUser._id,
+          verifiedAt: new Date()
+        });
+      }
       console.log('  ✔ Created Ambassador Profile and Referral Code for Diya: HT-DIYA2026');
     }
   }
